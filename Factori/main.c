@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+
 typedef struct list_t {
 	int number;
 	struct list_t* next;
@@ -79,6 +80,7 @@ list* Get__PrimeFactors(int number)
 	}
 	return p_prime_numbers_head;
 }
+
 
 int main(int argc, char* argv[])
 {
