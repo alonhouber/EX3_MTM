@@ -1,11 +1,5 @@
 #include <stdio.h>
 
-typedef struct list
-{
-	int number;
-	list* next;
-}list;
-
 list* New__List(int number)
 {
 	list* new_list = (list*) malloc(sizeof(list));
