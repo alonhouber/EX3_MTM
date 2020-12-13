@@ -5,7 +5,8 @@
 #define READ_ONE_CHAR 1
 #define READ_FILE_FAIL -1
 #define DECIMAL_BASE 10
-
+#define MISSIONS_ARGUMET 3
+#define THREADS_ARGUMET 4
 
 
 typedef struct list_t {
@@ -128,10 +129,11 @@ int get_priority(HANDLE priority_file)
 	return priority;
 }
 
-
 int main(int argc, char* argv[])
 {
-	int x;
+	int x, missions_num, threads_num;
+	missions_num =strtol(argv[MISSIONS_ARGUMET], NULL, DECIMAL_BASE);
+	threads_num = strtol(argv[THREADS_ARGUMET], NULL, DECIMAL_BASE);
 	printf("Enter Number (-1 to stop): \n");
 	scanf_s("%d", &x);
 	while (x != -1)
