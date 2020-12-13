@@ -67,13 +67,15 @@ list* Get__PrimeFactors(int number)
 
 int main(int argc, char* argv[])
 {
-	int x = 0;
+	int x;
+	printf("Enter Number (-1 to stop): \n");
+	scanf_s("%d", &x);
 	while (x != -1)
-	{
-		printf("Enter Number (-1 to stop): \n");
-		scanf_s("%d", &x);
+	{		
 		list* head = Get__PrimeFactors(x);
 		Print__List(head, x);
+		printf("Enter Number (-1 to stop): \n");
+		scanf_s("%d", &x);
 	}
 	return 0;
 }
