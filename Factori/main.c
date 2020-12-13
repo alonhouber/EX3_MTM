@@ -57,7 +57,7 @@ int get_len_of_num(int num)
 int Get__line_list_length(list* head, int num)
 {
 	list* current_pos = head;
-	int len = START_OF_LINE_LEN + find_len_of_num(num);
+	int len = START_OF_LINE_LEN + get_len_of_num(num);
 	while (current_pos->next != NULL)
 	{
 		len = len + COMMA_AND_SPACE_LEN + get_len_of_num(current_pos->number);
