@@ -1,15 +1,16 @@
 #include <stdio.h>
 #include <math.h>
-
-typedef struct list {
+#include <stdlib.h>
+typedef struct list_t {
 	int number;
-	list* next;
+	struct list_t* next;
 }list;
 
 list* New__List(int number)
 {
-	list* new_list = (list*) malloc(sizeof(list));
+	list* new_list = (list*) malloc(sizeof(list));	
 	new_list->number = number;
+	new_list->next = NULL;
 	return new_list;
 }
 
@@ -30,6 +31,16 @@ list* Add__ToList(list* head, int number)
 	return head;
 }
 
+void Print__List(list * head, int number)
+{
+	printf("The prime factors of %d are: ", number);
+	while (head->next != NULL)
+	{
+		printf("%d, ",head->number);
+		head = head->next;
+	}
+	printf("%d\n", head->number);
+}
 list* Get__PrimeFactors(int number)
 {
 	list* p_prime_numbers_head = NULL;
@@ -51,9 +62,14 @@ list* Get__PrimeFactors(int number)
 	{
 		p_prime_numbers_head = Add__ToList(p_prime_numbers_head,number);
 	}
+	return p_prime_numbers_head;
 }
 
 int main(int argc, char* argv[])
 {
-		
+	int x;
+	scanf_s("%d", &x);
+	list* head = Get__PrimeFactors(x);
+	Print__List(head, x);
+
 }
