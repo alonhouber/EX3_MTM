@@ -50,7 +50,7 @@ list* Get__PrimeFactors(int number)
 		number /= 2;
 	}
 	int factor_to_check = 3;
-	for  (;  factor_to_check < (int)sqrt(number) ; factor_to_check+=2)
+	for  (;  factor_to_check <= (int)sqrt(number) ; factor_to_check+=2)
 	{
 		while (number % factor_to_check == 0)
 		{
@@ -67,9 +67,13 @@ list* Get__PrimeFactors(int number)
 
 int main(int argc, char* argv[])
 {
-	int x;
-	scanf_s("%d", &x);
-	list* head = Get__PrimeFactors(x);
-	Print__List(head, x);
-
+	int x = 0;
+	while (x != -1)
+	{
+		printf("Enter Number (-1 to stop): \n");
+		scanf_s("%d", &x);
+		list* head = Get__PrimeFactors(x);
+		Print__List(head, x);
+	}
+	return 0;
 }
