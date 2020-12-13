@@ -41,18 +41,28 @@ list* Add__ToList(list* head, int number)
 	last_num->next = New__List(number);
 	return head;
 }
-void Print__List(list * head, int number)
+char* Print__List(list* head, int number)
 {
-	printf("The prime factors of %d are: ", number);
+	int memory_size = 40;
+	char* list_format_string = (char*)malloc(sizeof(char) * memory_size);
+	if (list_format_string == NULL)
+	{
+		ExitFailure("Fail", -1);
+		return NULL;
+	}
+	snprintf(list_format_string, memory_size, "The prime factors of %d are: ", number);
 	if (head != NULL)
 	{
 		while (head->next != NULL)
 		{
-			printf("%d, ", head->number);
+			memory_size += 11;
+			snprintf(list_format_string, memory_size, "%d", head->number);			
 			head = head->next;
 		}
-		printf("%d\n", head->number);
+		memory_size += 11;
+		snprintf(list_format_string, memory_size, "%d", head->number);
 	}
+	printf("\n");
 }
 void Free__List(list* head)
 {
@@ -94,7 +104,9 @@ typedef struct {
 
 int char_to_int(char char_num)
 {
-	return char_num - '0';
+	if(char_num >= '0' && char_num <= '9')
+		return char_num - '0';
+	return 0;
 }
 
 int Get_Priority(HANDLE priority_file_handle)
@@ -124,7 +136,8 @@ int Get_Priority(HANDLE priority_file_handle)
 			ExitFailure("READ_FILE_FAIL", -1);
 		}
 	}
-	SetFilePointer(priority_file_handle, 2, NULL, FILE_CURRENT);
+	SetFilePointerSimple(priority_file_handle, 1, FILE_CURRENT);
+	printf("Prio %d", priority);
 	return priority;
 }
 
@@ -145,43 +158,45 @@ DWORD WINAPI Read_And_Write(LPVOID lp_params )
 	if (priority_file_handle == INVALID_HANDLE_VALUE)
 	{
 		ExitFailure("FAILED_TO_OPEN", -1);
-	}
-	int number_of_bytes_read = -1;
-	while (number_of_bytes_read != 0)
+	}	
+	int i = 0;
+	while (i < p_thread_params->number_of_missions)
 	{
 		int mission_start_byte = Get_Priority(priority_file_handle);
 		int mission_number = 0;
-		SetFilePointerSimple(mission_file_handle, mission_start_byte);
+		SetFilePointerSimple(mission_file_handle, mission_start_byte, FILE_BEGIN);
 		char current_char = '\r';
 		if (!ReadFile(mission_file_handle,
 			&current_char,
 			READ_ONE_CHAR,
-			&number_of_bytes_read,
+			NULL,
 			NULL))
 		{
 			ExitFailure("READ_FILE_FAIL", -1);
 			return -1;
 		}
-		while (current_char != '\r' && number_of_bytes_read != 0)
+		while (current_char != '\r')
 		{
 			mission_number *= DECIMAL_BASE;
 			mission_number += char_to_int(current_char);
 			if (!ReadFile(mission_file_handle,
 				&current_char,
 				READ_ONE_CHAR,
-				&number_of_bytes_read,
+				NULL,
 				NULL))
 			{
 				ExitFailure("READ_FILE_FAIL", -1);
 			}
 		}
 		list* current_mission_head = NULL; 
-		current_mission_head = Add__ToList(current_mission_head, mission_number);
+		current_mission_head = Get__PrimeFactors(mission_number);
 		Print__List(current_mission_head,mission_number);
-		Free__List(current_mission_head);
+		Free__List(current_mission_head);		
+		i++;
 	}
+	return 1;
 }
-void Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
+int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 	int number_of_missions, int number_of_threads)
 {
 	Thread_Params* p_thread_params = (Thread_Params*)malloc(sizeof(Thread_Params));
@@ -209,14 +224,15 @@ void Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name
 		ExitFailure("Error when waiting", -1);
 	}
 	free(p_thread_params);
+	return  1;
 }
 int main(int argc, char* argv[])
 {
-	int x, missions_num, threads_num;
+	int missions_num, threads_num;
 	missions_num = strtol(argv[MISSIONS_NUM_ARGUMET], NULL, DECIMAL_BASE);
 	threads_num = strtol(argv[THREADS_NUM_ARGUMET], NULL, DECIMAL_BASE);
 	Create_And_Handle_Threads(argv[MISSION_FILE_NAME_ARGUMENT], argv[PRIORITY_FILE_NAME_ARGUMENT], missions_num, threads_num);
-	printf("Enter Number (-1 to stop): \n");
+	/*printf("Enter Number (-1 to stop): \n");
 	scanf_s("%d", &x);
 	while (x != -1)
 	{		
@@ -225,6 +241,6 @@ int main(int argc, char* argv[])
 		Free__List(head);
 		printf("Enter Number (-1 to stop): \n");
 		scanf_s("%d", &x);		
-	}
+	}*/
 	return 0;
 }

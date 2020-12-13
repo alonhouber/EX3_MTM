@@ -47,9 +47,9 @@ HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE p_start_routine, LPVOID p_param
 	return thread_handle;
 
 }
-void SetFilePointerSimple(HANDLE file, long distance_to_move)
+void SetFilePointerSimple(HANDLE file, long distance_to_move , DWORD move_method)
 {
-	DWORD dw_ptr_low = SetFilePointer(file, distance_to_move, NULL, FILE_BEGIN);
+	DWORD dw_ptr_low = SetFilePointer(file, distance_to_move, NULL, move_method);
 	//printf("DtM:%d\n", distance_to_move);
 	if (dw_ptr_low == INVALID_SET_FILE_POINTER &&
 		GetLastError() != NO_ERROR)
