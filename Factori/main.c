@@ -9,8 +9,11 @@ typedef struct list_t {
 list* New__List(int number)
 {
 	list* new_list = (list*) malloc(sizeof(list));	
-	new_list->number = number;
-	new_list->next = NULL;
+	if (new_list != NULL)
+	{
+		new_list->number = number;
+		new_list->next = NULL;
+	}
 	return new_list;
 }
 
@@ -34,12 +37,24 @@ list* Add__ToList(list* head, int number)
 void Print__List(list * head, int number)
 {
 	printf("The prime factors of %d are: ", number);
-	while (head->next != NULL)
+	if (head != NULL)
 	{
-		printf("%d, ",head->number);
-		head = head->next;
+		while (head->next != NULL)
+		{
+			printf("%d, ", head->number);
+			head = head->next;
+		}
+		printf("%d\n", head->number);
 	}
-	printf("%d\n", head->number);
+}
+void Free__List(list* head)
+{
+	while (head != NULL)
+	{
+		list* temp = head;
+		head = head->next;
+		free(temp);
+	}
 }
 list* Get__PrimeFactors(int number)
 {
@@ -72,10 +87,11 @@ int main(int argc, char* argv[])
 	scanf_s("%d", &x);
 	while (x != -1)
 	{		
-		list* head = Get__PrimeFactors(x);
+		list* head = Get__PrimeFactors(x);		
 		Print__List(head, x);
+		Free__List(head);
 		printf("Enter Number (-1 to stop): \n");
-		scanf_s("%d", &x);
+		scanf_s("%d", &x);		
 	}
 	return 0;
 }
