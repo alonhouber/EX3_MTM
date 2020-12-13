@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#include <Windows.h>
+#define READ_ONE_CHAR 1
+#define READ_FILE_FAIL -1
+#define DECIMAL_BASE 10
 
 typedef struct list_t {
 	int number;
@@ -81,6 +85,40 @@ list* Get__PrimeFactors(int number)
 	return p_prime_numbers_head;
 }
 
+int char_to_int(char char_num)
+{
+	return char_num - '0';
+}
+
+int get_priority(HANDLE priority_file)
+{
+	char current_char = '\0';
+	int priority = 0;
+	int num_of_char = 0;
+	if (!ReadFile(priority_file,
+		&current_char,
+		READ_ONE_CHAR,
+		NULL,
+		NULL))
+	{
+		ExitFailure("READ_FILE_FAIL", READ_FILE_FAIL);
+	}
+	while (current_char != '\r')
+	{
+		priority = priority * DECIMAL_BASE;
+		num_of_char = char_to_int(current_char);
+		priority += num_of_char;
+		if (!ReadFile(priority_file,
+			current_char,
+			READ_ONE_CHAR,
+			NULL,
+			NULL))
+		{
+			ExitFailure("READ_FILE_FAIL", READ_FILE_FAIL);
+		}
+	}
+	return priority;
+}
 
 int main(int argc, char* argv[])
 {
