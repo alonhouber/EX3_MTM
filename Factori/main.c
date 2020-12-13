@@ -5,9 +5,10 @@
 #define READ_ONE_CHAR 1
 #define READ_FILE_FAIL -1
 #define DECIMAL_BASE 10
-#define MISSIONS_ARGUMET 3
-#define THREADS_ARGUMET 4
-
+#define MISSION_FILE_NAME_ARGUMENT 1
+#define PRIORITY_FILE_NAME_ARGUMENT 2
+#define MISSIONS_NUM_ARGUMET 3
+#define THREADS_NUM_ARGUMET 4
 
 typedef struct list_t {
 	int number;
@@ -99,7 +100,7 @@ int char_to_int(char char_num)
 	return char_num - '0';
 }
 
-int get_priority(HANDLE priority_file)
+int Get_Priority(HANDLE priority_file)
 {
 	char current_char = '\0';
 	int priority = 0;
@@ -132,12 +133,9 @@ int get_priority(HANDLE priority_file)
 typedef struct {
 	char mission_file_name[_MAX_PATH];
 	char priority_file_name[_MAX_PATH];
+	int missions_num;
+	int threads_num;
 }Thread_Params;
-
-int char_to_int(char char_num)
-{
-	return char_num - '0';
-}
 
 void Read_And_Write(LPVOID lp_params )
 {
@@ -194,8 +192,9 @@ void Create_And_Handle_Threads()
 int main(int argc, char* argv[])
 {
 	int x, missions_num, threads_num;
-	missions_num =strtol(argv[MISSIONS_ARGUMET], NULL, DECIMAL_BASE);
-	threads_num = strtol(argv[THREADS_ARGUMET], NULL, DECIMAL_BASE);
+	missions_num = strtol(argv[MISSIONS_NUM_ARGUMET], NULL, DECIMAL_BASE);
+	threads_num = strtol(argv[THREADS_NUM_ARGUMET], NULL, DECIMAL_BASE);
+	Create_And_Handle_Threads(argv[MISSION_FILE_NAME_ARGUMENT], argv[PRIORITY_FILE_NAME_ARGUMENT], missions_num, threads_num);
 	printf("Enter Number (-1 to stop): \n");
 	scanf_s("%d", &x);
 	while (x != -1)
