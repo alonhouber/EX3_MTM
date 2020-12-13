@@ -1,4 +1,10 @@
 #include <stdio.h>
+#include <math.h>
+
+typedef struct list {
+	int number;
+	list* next;
+}list;
 
 list* New__List(int number)
 {
@@ -24,7 +30,30 @@ list* Add__ToList(list* head, int number)
 	return head;
 }
 
+list* Get__PrimeFactors(int number)
+{
+	list* p_prime_numbers_head = NULL;
+	while (number % 2 == 0)
+	{
+		p_prime_numbers_head = Add__ToList(p_prime_numbers_head,2);
+		number /= 2;
+	}
+	int factor_to_check = 3;
+	for  (;  factor_to_check < (int)sqrt(number) ; factor_to_check+=2)
+	{
+		while (number % factor_to_check == 0)
+		{
+			p_prime_numbers_head = Add__ToList(p_prime_numbers_head,factor_to_check);
+			number /= factor_to_check;
+		}
+	}
+	if (number > 2)
+	{
+		p_prime_numbers_head = Add__ToList(p_prime_numbers_head,number);
+	}
+}
+
 int main(int argc, char* argv[])
 {
-	
+		
 }
