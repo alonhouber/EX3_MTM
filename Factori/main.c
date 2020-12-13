@@ -58,35 +58,35 @@ int Get__line_list_length(list* head, int num)
 {
 	list* current_pos = head;
 	int len = START_OF_LINE_LEN + get_len_of_num(num);
-	while (current_pos->next != NULL)
+	if (head != NULL)
 	{
-		len = len + COMMA_AND_SPACE_LEN + get_len_of_num(current_pos->number);
-		current_pos = current_pos->next;
+		while (current_pos->next != NULL)
+		{
+			len = len + COMMA_AND_SPACE_LEN + get_len_of_num(current_pos->number);
+			current_pos = current_pos->next;
+		}
+		len = len + get_len_of_num(current_pos->number);
 	}
-	len = len + get_len_of_num(current_pos->number);
 	return len;
 }
 
-char* Print__List(list* head, int number)
+char* Print__List(list* head, int number, char* list_format_string, int memory_size)
 {
 	list* temp_head = head;
-	int memory_size = Get__line_list_length(temp_head, number);
-	char* list_format_string = (char*)malloc(sizeof(char) * memory_size);
-	if (list_format_string == NULL)
-	{
-		ExitFailure("Fail", -1);
-		return NULL;
-	}
 	snprintf(list_format_string, memory_size, "The prime factors of %d are: ", number);
+	if (head == NULL)
+	{		
+		return list_format_string;
+	}	
 	char* temp_string = NULL;
 	if (temp_head != NULL)
 	{
 		while (temp_head->next != NULL)
-		{			
+		{
 			temp_string = list_format_string;
 			snprintf(list_format_string, memory_size, "%s%d, ", temp_string, temp_head->number);
 			temp_head = temp_head->next;
-		}		
+		}
 		temp_string = list_format_string;
 		snprintf(list_format_string, memory_size, "%s%d", temp_string, temp_head->number);
 	}
@@ -170,11 +170,11 @@ int Get_Priority(HANDLE priority_file_handle)
 	return priority;
 }
 
-DWORD WINAPI Read_And_Write(LPVOID lp_params )
+DWORD WINAPI Read_And_Write(LPVOID lp_params)
 {
 	Thread_Params* p_thread_params = (Thread_Params*)lp_params;
 	HANDLE mission_file_handle, priority_file_handle;
-	mission_file_handle = CreateFileSimple(p_thread_params->mission_file_name, 
+	mission_file_handle = CreateFileSimple(p_thread_params->mission_file_name,
 		GENERIC_READ, 0, OPEN_EXISTING);
 	if (mission_file_handle == INVALID_HANDLE_VALUE)
 	{
@@ -187,7 +187,7 @@ DWORD WINAPI Read_And_Write(LPVOID lp_params )
 	if (priority_file_handle == INVALID_HANDLE_VALUE)
 	{
 		ExitFailure("FAILED_TO_OPEN", -1);
-	}	
+	}
 	int i = 0;
 	while (i < p_thread_params->number_of_missions)
 	{
@@ -217,10 +217,14 @@ DWORD WINAPI Read_And_Write(LPVOID lp_params )
 				ExitFailure("READ_FILE_FAIL", -1);
 			}
 		}
-		list* current_mission_head = NULL; 
-		current_mission_head = Get__PrimeFactors(mission_number);
-		printf("%s", Print__List(current_mission_head, mission_number));
-		Free__List(current_mission_head);		
+		list* current_mission_head = NULL;
+		current_mission_head = Get__PrimeFactors(mission_number);		
+		int memory_size = Get__line_list_length(current_mission_head, mission_number);
+		printf("Mem Size: %d\n", memory_size);
+		char* list_format_string = (char*)malloc(sizeof(char) * memory_size);
+		printf("%s", Print__List(current_mission_head, mission_number, list_format_string, memory_size));
+		free(list_format_string);
+		Free__List(current_mission_head);
 		i++;
 	}
 	return 1;
