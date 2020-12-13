@@ -10,6 +10,8 @@
 #define PRIORITY_FILE_NAME_ARGUMENT 2
 #define MISSIONS_NUM_ARGUMET 3
 #define THREADS_NUM_ARGUMET 4
+#define START_OF_LINE_LEN 30
+#define COMMA_AND_SPACE_LEN 2
 
 typedef struct list_t {
 	int number;
@@ -41,6 +43,30 @@ list* Add__ToList(list* head, int number)
 	last_num->next = New__List(number);
 	return head;
 }
+int get_len_of_num(int num)
+{
+	int counter = 0;
+	while (num > 0)
+	{
+		num = num / DECIMAL_BASE;
+		counter++;
+	}
+	return counter;
+}
+
+int Get__line_list_length(list* head, int num)
+{
+	list* current_pos = head;
+	int len = START_OF_LINE_LEN + find_len_of_num(num);
+	while (current_pos->next != NULL)
+	{
+		len = len + COMMA_AND_SPACE_LEN + get_len_of_num(current_pos->number);
+		current_pos = current_pos->next;
+	}
+	len = len + get_len_of_num(current_pos->number);
+	return len;
+}
+
 char* Print__List(list* head, int number)
 {
 	list* temp_head = head;
@@ -229,6 +255,7 @@ int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 	free(p_thread_params);
 	return  1;
 }
+
 int main(int argc, char* argv[])
 {
 	int missions_num, threads_num;
