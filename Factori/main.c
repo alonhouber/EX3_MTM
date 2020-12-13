@@ -2,6 +2,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <Windows.h>
+#include <string.h>
 #include "file_func.h"
 #define DECIMAL_BASE (int)10
 #define READ_ONE_CHAR 1
@@ -73,12 +74,8 @@ int Get__line_list_length(list* head, int num)
 char* Print__List(list* head, int number, char* list_format_string, int memory_size)
 {
 	list* temp_head = head;
-	snprintf(list_format_string, memory_size, "The prime factors of %d are: ", number);
-	if (head == NULL)
-	{		
-		return list_format_string;
-	}	
-	char* temp_string = NULL;
+	snprintf(list_format_string, memory_size, "The prime factors of %d are: ", number);	
+	char* temp_string = list_format_string;
 	if (temp_head != NULL)
 	{
 		while (temp_head->next != NULL)
@@ -90,7 +87,7 @@ char* Print__List(list* head, int number, char* list_format_string, int memory_s
 		temp_string = list_format_string;
 		snprintf(list_format_string, memory_size, "%s%d", temp_string, temp_head->number);
 	}
-	snprintf(list_format_string, memory_size, "%s\n", temp_string);
+	snprintf(list_format_string, memory_size, "%s\r\n", temp_string);
 	return list_format_string;
 }
 void Free__List(list* head)
@@ -175,7 +172,7 @@ DWORD WINAPI Read_And_Write(LPVOID lp_params)
 	Thread_Params* p_thread_params = (Thread_Params*)lp_params;
 	HANDLE mission_file_handle, priority_file_handle;
 	mission_file_handle = CreateFileSimple(p_thread_params->mission_file_name,
-		GENERIC_READ, 0, OPEN_EXISTING);
+		GENERIC_READ | GENERIC_WRITE, 0, OPEN_EXISTING);
 	if (mission_file_handle == INVALID_HANDLE_VALUE)
 	{
 		ExitFailure("FAILED_TO_OPEN", -1);
@@ -222,7 +219,19 @@ DWORD WINAPI Read_And_Write(LPVOID lp_params)
 		int memory_size = Get__line_list_length(current_mission_head, mission_number);
 		printf("Mem Size: %d\n", memory_size);
 		char* list_format_string = (char*)malloc(sizeof(char) * memory_size);
-		printf("%s", Print__List(current_mission_head, mission_number, list_format_string, memory_size));
+		list_format_string = Print__List(current_mission_head, mission_number, list_format_string, memory_size);
+		SetFilePointerSimple(mission_file_handle, 0, FILE_END);
+		if (!WriteFile(mission_file_handle,
+			list_format_string,
+			strlen(list_format_string),
+			NULL,
+			NULL))
+		{
+			free(list_format_string);
+			Free__List(current_mission_head);
+			ExitFailure("Write_FILE_FAIL", -1);
+			return -1;
+		}
 		free(list_format_string);
 		Free__List(current_mission_head);
 		i++;
