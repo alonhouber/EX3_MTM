@@ -43,7 +43,8 @@ list* Add__ToList(list* head, int number)
 }
 char* Print__List(list* head, int number)
 {
-	int memory_size = 40;
+	list* temp_head = head;
+	int memory_size = Get__line_list_length(temp_head, number);
 	char* list_format_string = (char*)malloc(sizeof(char) * memory_size);
 	if (list_format_string == NULL)
 	{
@@ -51,18 +52,20 @@ char* Print__List(list* head, int number)
 		return NULL;
 	}
 	snprintf(list_format_string, memory_size, "The prime factors of %d are: ", number);
-	if (head != NULL)
+	char* temp_string = NULL;
+	if (temp_head != NULL)
 	{
-		while (head->next != NULL)
-		{
-			memory_size += 11;
-			snprintf(list_format_string, memory_size, "%d", head->number);			
-			head = head->next;
-		}
-		memory_size += 11;
-		snprintf(list_format_string, memory_size, "%d", head->number);
+		while (temp_head->next != NULL)
+		{			
+			temp_string = list_format_string;
+			snprintf(list_format_string, memory_size, "%s%d, ", temp_string, temp_head->number);
+			temp_head = temp_head->next;
+		}		
+		temp_string = list_format_string;
+		snprintf(list_format_string, memory_size, "%s%d", temp_string, temp_head->number);
 	}
-	printf("\n");
+	snprintf(list_format_string, memory_size, "%s\n", temp_string);
+	return list_format_string;
 }
 void Free__List(list* head)
 {
@@ -190,7 +193,7 @@ DWORD WINAPI Read_And_Write(LPVOID lp_params )
 		}
 		list* current_mission_head = NULL; 
 		current_mission_head = Get__PrimeFactors(mission_number);
-		Print__List(current_mission_head,mission_number);
+		printf("%s", Print__List(current_mission_head, mission_number));
 		Free__List(current_mission_head);		
 		i++;
 	}
