@@ -1,0 +1,3 @@
+﻿  main.c
+C:\Users\AlonHouber\Desktop\לימודים\תכנון מערכות הפעלה\Ex3_315435495_31509508\EX3_MTM\Factori\main.c(118,4): warning C4022: 'ReadFile': pointer mismatch for actual parameter 2
+  Factori.vcxproj -> C:\Users\AlonHouber\Desktop\לימודים\תכנון מערכות הפעלה\Ex3_315435495_31509508\EX3_MTM\Debug\Factori.exe
