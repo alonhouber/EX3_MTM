@@ -1,2 +1,7 @@
+<<<<<<< HEAD
 #TargetFrameworkVersion=v4.0:PlatformToolSet=v142:EnableManagedIncrementalBuild=false:VCToolArchitecture=Native32Bit:WindowsTargetPlatformVersion=10.0
 Debug|Win32|C:\Users\dvirb\OneDrive\שולחן העבודה\Study\שנה ד\Intro_SysPro\Ex3\EX3_MTM\|
+=======
+PlatformToolSet=v142:VCToolArchitecture=Native32Bit:VCToolsVersion=14.27.29110:TargetPlatformVersion=10.0.18362.0:
+Debug|Win32|C:\Users\AlonHouber\Desktop\לימודים\תכנון מערכות הפעלה\Ex3_315435495_31509508\EX3_MTM\|
+>>>>>>> 9352e38f8c68b76308074e9fd71837b3b5cbc31e

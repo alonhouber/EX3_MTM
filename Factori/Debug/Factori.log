@@ -1,2 +1,14 @@
 ﻿  file_func.c
+<<<<<<< HEAD
   Factori.vcxproj -> C:\Users\dvirb\OneDrive\שולחן העבודה\Study\שנה ד\Intro_SysPro\Ex3\EX3_MTM\Debug\Factori.exe
+=======
+  main.c
+C:\Users\AlonHouber\Desktop\לימודים\תכנון מערכות הפעלה\Ex3_315435495_31509508\EX3_MTM\Factori\main.c(122,4): warning C4022: 'ReadFile': pointer mismatch for actual parameter 2
+C:\Users\AlonHouber\Desktop\לימודים\תכנון מערכות הפעלה\Ex3_315435495_31509508\EX3_MTM\Factori\main.c(140,5): error C2084: function 'int char_to_int(char)' already has a body
+C:\Users\AlonHouber\Desktop\לימודים\תכנון מערכות הפעלה\Ex3_315435495_31509508\EX3_MTM\Factori\main.c(98): message : see previous definition of 'char_to_int'
+C:\Users\AlonHouber\Desktop\לימודים\תכנון מערכות הפעלה\Ex3_315435495_31509508\EX3_MTM\Factori\main.c(149,40): warning C4013: 'CreateFileSimple' undefined; assuming extern returning int
+C:\Users\AlonHouber\Desktop\לימודים\תכנון מערכות הפעלה\Ex3_315435495_31509508\EX3_MTM\Factori\main.c(150,34): warning C4047: '=': 'HANDLE' differs in levels of indirection from 'int'
+C:\Users\AlonHouber\Desktop\לימודים\תכנון מערכות הפעלה\Ex3_315435495_31509508\EX3_MTM\Factori\main.c(157,34): warning C4047: '=': 'HANDLE' differs in levels of indirection from 'int'
+C:\Users\AlonHouber\Desktop\לימודים\תכנון מערכות הפעלה\Ex3_315435495_31509508\EX3_MTM\Factori\main.c(168,23): warning C4013: 'SetFilePointerSimple' undefined; assuming extern returning int
+  Generating Code...
+>>>>>>> 9352e38f8c68b76308074e9fd71837b3b5cbc31e
