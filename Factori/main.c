@@ -6,6 +6,8 @@
 #define READ_FILE_FAIL -1
 #define DECIMAL_BASE 10
 
+
+
 typedef struct list_t {
 	int number;
 	struct list_t* next;
@@ -125,6 +127,7 @@ int get_priority(HANDLE priority_file)
 	}
 	return priority;
 }
+
 
 int main(int argc, char* argv[])
 {
