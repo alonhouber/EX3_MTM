@@ -129,6 +129,68 @@ int get_priority(HANDLE priority_file)
 	return priority;
 }
 
+typedef struct {
+	char mission_file_name[_MAX_PATH];
+	char priority_file_name[_MAX_PATH];
+}Thread_Params;
+
+int char_to_int(char char_num)
+{
+	return char_num - '0';
+}
+
+void Read_And_Write(LPVOID lp_params )
+{
+	Thread_Params* p_thread_params = (Thread_Params*)lp_params;
+	HANDLE mission_file_handle, priority_file_handle;
+	mission_file_handle = CreateFileSimple(p_thread_params->mission_file_name, 
+		GENERIC_READ, 0, OPEN_EXISTING);
+	if (mission_file_handle == INVALID_HANDLE_VALUE)
+	{
+		ExitFailure("FAILED_TO_OPEN", -1);
+	}
+
+	priority_file_handle = CreateFileSimple(p_thread_params->priority_file_name,
+		GENERIC_READ, 0, OPEN_EXISTING);
+	if (priority_file_handle == INVALID_HANDLE_VALUE)
+	{
+		ExitFailure("FAILED_TO_OPEN", -1);
+	}
+
+	char mission_line[11];
+	while (1)
+	{
+		int mission_start_byte = Get_Priority(priority_file_handle);
+		int mission_number = 0;
+		SetFilePointerSimple(mission_file_handle, mission_start_byte);
+		char current_char = '\r';
+		if (!ReadFile(mission_file_handle,
+			&current_char,
+			READ_ONE_CHAR,
+			NULL,
+			NULL))
+		{
+			ExitFailure("READ_FILE_FAIL", -1);
+		}
+		while (current_char != '\r')
+		{
+			mission_number *= DECIMAL_BASE;
+			mission_number += char_to_int(current_char);
+			if (!ReadFile(mission_file_handle,
+				&current_char,
+				READ_ONE_CHAR,
+				NULL,
+				NULL))
+			{
+				ExitFailure("READ_FILE_FAIL", -1);
+			}
+		}
+	}
+}
+void Create_And_Handle_Threads()
+{
+
+}
 int main(int argc, char* argv[])
 {
 	int x, missions_num, threads_num;
