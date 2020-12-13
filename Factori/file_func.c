@@ -24,6 +24,7 @@ HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE p_start_routine, LPVOID p_param
 	if (NULL == p_start_routine)
 	{
 		ExitFailure("Error when creating a thread\nReceived null pointer", ERROR_CODE);
+		return NULL;
 	}
 
 	if (NULL == p_thread_id)
@@ -49,7 +50,7 @@ HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE p_start_routine, LPVOID p_param
 void SetFilePointerSimple(HANDLE file, long distance_to_move)
 {
 	DWORD dw_ptr_low = SetFilePointer(file, distance_to_move, NULL, FILE_BEGIN);
-	printf("DtM:%d\n", distance_to_move);
+	//printf("DtM:%d\n", distance_to_move);
 	if (dw_ptr_low == INVALID_SET_FILE_POINTER &&
 		GetLastError() != NO_ERROR)
 	{
