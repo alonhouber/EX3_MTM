@@ -32,10 +32,10 @@ list* Add__ToList(list* head, int number)
 
 list* Get__PrimeFactors(int number)
 {
-	list* p_prime_numbers_list = NULL;
+	list* p_prime_numbers_head = NULL;
 	while (number % 2 == 0)
 	{
-		Add__ToList(2);
+		p_prime_numbers_head = Add__ToList(p_prime_numbers_head,2);
 		number /= 2;
 	}
 	int factor_to_check = 3;
@@ -43,13 +43,13 @@ list* Get__PrimeFactors(int number)
 	{
 		while (number % factor_to_check == 0)
 		{
-			Add__ToList(factor_to_check);
+			p_prime_numbers_head = Add__ToList(p_prime_numbers_head,factor_to_check);
 			number /= factor_to_check;
 		}
 	}
 	if (number > 2)
 	{
-		Add__ToList(number);
+		p_prime_numbers_head = Add__ToList(p_prime_numbers_head,number);
 	}
 }
 
