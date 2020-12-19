@@ -133,6 +133,7 @@ typedef struct {
 	int number_of_missions;
 	Queue* priority_Q;
 	Lock* my_lock;
+	int number_of_threads;
 }Thread_Params;
 
 int char_to_int(char char_num)
@@ -235,7 +236,7 @@ Queue* Create_Priority_Queue(HANDLE priority_file_handle, int number_of_missions
 	return priority_Q;	
 }
 
-DWORD WINAPI Read_And_Write(LPVOID lp_params, int number_of_threads)
+DWORD WINAPI Read_And_Write(LPVOID lp_params)
 {
 	Thread_Params* p_thread_params = (Thread_Params*)lp_params;
 	/*==========================================================================================*/
@@ -278,15 +279,15 @@ DWORD WINAPI Read_And_Write(LPVOID lp_params, int number_of_threads)
 			return -1;
 		}
 		Read__Release(p_thread_params->my_lock);
-		Write__Release(p_thread_params->my_lock, number_of_threads);
+		Write__Release(p_thread_params->my_lock, p_thread_params->number_of_threads);
 		/*==========================================================================================*/
 		/* Write Mission result at EOF */
-		while (Write__Lock(p_thread_params->my_lock, WAIT_TIME_WRITE_LOCK, number_of_threads) == FALSE);
+		while (Write__Lock(p_thread_params->my_lock, WAIT_TIME_WRITE_LOCK, p_thread_params->number_of_threads) == FALSE);
 		if (Write_Mission(mission_file_handle, mission_number) == false){
 			Destroy__Queue(p_thread_params->priority_Q);
 			return -1;
 		}	
-		Write__Release(p_thread_params->my_lock, number_of_threads);
+		Write__Release(p_thread_params->my_lock, p_thread_params->number_of_threads);
 	}	
 	return 1;
 }
@@ -315,6 +316,8 @@ int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 
 	Lock* new_lock = New__Lock(number_of_threads);
 	p_thread_params->my_lock = new_lock;
+
+	p_thread_params->number_of_threads = number_of_threads;
 	/*==========================================================================================*/
 	/* Create Thread */
 	HANDLE thread_handle;
