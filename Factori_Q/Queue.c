@@ -28,19 +28,10 @@ Queue* New__Queue()
 	return new_Q;
 }
 
-/*Queue New__Queue1()
-{
-	Queue new_Q;	
-	new_Q.first = NULL;
-	new_Q.last = NULL;
-	new_Q.client_count = 0;
-	return new_Q;
-}*/
-
 void Push__Queue(Queue* my_Q , int number)
 {
 	QClient* new_QC = New__QClient(number);
-	if (my_Q->first == NULL || my_Q->last == NULL)
+	if (Empty__Queue(my_Q))
 	{		
 		my_Q->first = new_QC;
 		my_Q->last = new_QC;
@@ -55,13 +46,12 @@ void Push__Queue(Queue* my_Q , int number)
 
 int Pop__Queue(Queue* my_Q)
 {	
-	if (my_Q->first == NULL || my_Q->last == NULL)
+	if (Empty__Queue(my_Q))
 	{
 		return -1;
 	}
 	else
 	{
-		//should we just free the my_Q->first? we dont need him anymore.
 		int retval = my_Q->first->number;
 		QClient* temp = my_Q->first;
 		if (my_Q->first == my_Q->last)
@@ -75,7 +65,7 @@ int Pop__Queue(Queue* my_Q)
 
 int Top__Queue(Queue* my_Q)
 {
-	if (my_Q->first == NULL || my_Q->last == NULL)
+	if (Empty__Queue(my_Q))
 	{
 		return -1;
 	}
@@ -86,8 +76,12 @@ int Top__Queue(Queue* my_Q)
 }
 
 bool Empty__Queue (Queue* my_Q)
-{
+{	
 	if (my_Q->first == NULL || my_Q->last == NULL)
+	{
+		return true;
+	}
+	if (my_Q->client_count == 0)
 	{
 		return true;
 	}
@@ -95,9 +89,6 @@ bool Empty__Queue (Queue* my_Q)
 }
 
 void Destroy__Queue(Queue* my_Q)
-{// if we free each link when we pop this function is very easy
-	while (Pop__Queue(my_Q) != -1)
-	{
-		continue;
-	}
+{
+	while (Pop__Queue(my_Q) != -1);	
 }
