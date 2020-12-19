@@ -1,7 +1,6 @@
 #include <Windows.h>
 #define WAIT_TIME 5000
 #include <stdio.h>
-#include <stdbool.h>
 typedef struct Lock {
 	HANDLE read_lock;
 	HANDLE write_lock;
@@ -25,20 +24,21 @@ Lock* New__Lock(int number_of_threads)
 	return my_lock;
 }
 
-bool Read__Lock(Lock* my_Lock) {
+BOOL Read__Lock(Lock* my_Lock) {
 	DWORD wait_code;
-	wait_code = WaitForSingleObject(my_Lock->read_lock, WAIT_TIME);
+	wait_code = WaitForSingleObject(my_Lock->write_lock, WAIT_TIME);
 	if (WAIT_OBJECT_0 != wait_code) {		
-		return  false;
+		return  FALSE;
 	}
-	return true;
-}
-
-bool Read__Release(Lock* my_Lock) {
-	DWORD wait_code;
 	wait_code = WaitForSingleObject(my_Lock->read_lock, WAIT_TIME);
 	if (WAIT_OBJECT_0 != wait_code) {
-		return  false;
+		return  FALSE;
 	}
-	return true;
+	return TRUE;
 }
+
+BOOL Read__Release(Lock* my_Lock) {
+	return ReleaseSemaphore(my_Lock->read_lock, 1, NULL);
+}
+
+
