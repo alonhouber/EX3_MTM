@@ -17,8 +17,9 @@
 #define THREADS_NUM_ARGUMET 4
 #define START_OF_LINE_LEN 30
 #define COMMA_AND_SPACE_LEN 2
-#define WAIT_TIME_READ_LOCK 50
-#define WAIT_TIME_WRITE_LOCK 50
+#define WAIT_TIME_READ_LOCK 5000
+#define WAIT_TIME_WRITE_LOCK 5000
+
 typedef struct list_t {
 	int number;
 	struct list_t* next;
@@ -252,16 +253,17 @@ DWORD WINAPI Read_And_Write(LPVOID lp_params)
 	}		
 	/*==========================================================================================*/
 	/* Run Missions until Queue is Empty */
-	printf("before Read_Lock while\n");
-	bool d = false;
-	while (Read__Lock(p_thread_params->my_lock->read_lock, WAIT_TIME_READ_LOCK) == FALSE)
-	{
-		if (d == false)
-			printf("1\n");
-		d = true;
+	
+	/*printf("before Read_Lock while\n");	
+	
+	{		
+		printf("Cant Read\n");		
 	}
-	printf("after Read_Lock while\n");
-	while (!Empty__Queue(p_thread_params->priority_Q)){
+	printf("after Read_Lock while\n");*/
+	
+	while (!Empty__Queue(p_thread_params->priority_Q)){		
+		while (Read__Lock(p_thread_params->my_lock, WAIT_TIME_READ_LOCK) == FALSE);
+		printf("after Read_Lock while\n");
 		/*==========================================================================================*/
 		/* Get Priority */
 		int mission_start_byte = Pop__Queue(p_thread_params->priority_Q);
@@ -277,9 +279,8 @@ DWORD WINAPI Read_And_Write(LPVOID lp_params)
 		if (mission_number == -1){//What if we get -1 as a mission?
 			Destroy__Queue(p_thread_params->priority_Q);
 			return -1;
-		}
-		Read__Release(p_thread_params->my_lock);
-		Write__Release(p_thread_params->my_lock, p_thread_params->number_of_threads);
+		}			
+		Read__Release(p_thread_params->my_lock);		
 		/*==========================================================================================*/
 		/* Write Mission result at EOF */
 		while (Write__Lock(p_thread_params->my_lock, WAIT_TIME_WRITE_LOCK, p_thread_params->number_of_threads) == FALSE);
@@ -303,6 +304,7 @@ int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 	}	
 	snprintf(p_thread_params->mission_file_name, _MAX_PATH, "%s", mission_file_name);	
 	p_thread_params->number_of_missions = number_of_missions;
+	p_thread_params->number_of_threads = number_of_threads;
 	/* Create Queue and assume it to Thread Params */
 	HANDLE priority_file_handle;
 	priority_file_handle = CreateFileSimple(priority_file_name,
@@ -315,9 +317,7 @@ int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 	p_thread_params->priority_Q = Create_Priority_Queue(priority_file_handle, number_of_missions);
 
 	Lock* new_lock = New__Lock(number_of_threads);
-	p_thread_params->my_lock = new_lock;
-
-	p_thread_params->number_of_threads = number_of_threads;
+	p_thread_params->my_lock = new_lock;	
 	/*==========================================================================================*/
 	/* Create Thread */
 	HANDLE thread_handle;

@@ -1,5 +1,4 @@
 #include <Windows.h>
-#define WAIT_TIME 5000
 #include <stdio.h>
 #include "Lock.h"
 
@@ -10,11 +9,11 @@ Lock* New__Lock(int number_of_threads)
 		printf("MEMORY_ALLOCATION_FAILED");
 		return NULL;
 	}
-	my_lock->read_lock = CreateSemaphoreA(NULL, 0, number_of_threads, NULL);
+	my_lock->read_lock = CreateSemaphore(NULL, number_of_threads, number_of_threads, NULL);
 	if (my_lock->read_lock == NULL){
 		return NULL;
 	}
-	my_lock->write_lock = CreateSemaphoreA(NULL, 0, number_of_threads, NULL);
+	my_lock->write_lock = CreateSemaphore(NULL, number_of_threads, number_of_threads, NULL);
 	if (my_lock->write_lock == NULL) {
 		return NULL;
 	}
@@ -30,20 +29,17 @@ BOOL Read__Release(Lock* my_Lock) {
 }
 
 BOOL Read__Lock(Lock* my_Lock, int wait_time) {
-	DWORD wait_code;
-	printf("before wait_code\n");
-	wait_code = WaitForSingleObject(my_Lock->write_lock, wait_time);
-	printf("after wait_code\n");
+	DWORD wait_code;	
+	wait_code = WaitForSingleObject(my_Lock->write_lock, INFINITE);	
 	if (WAIT_OBJECT_0 != wait_code) {
-		printf("write_lock\n");
+		printf("write_locked\n");
 		return  FALSE;
-	}
-	wait_code = WaitForSingleObject(my_Lock->read_lock, wait_time);
+	}	
+	wait_code = WaitForSingleObject(my_Lock->read_lock, INFINITE);
 	if (WAIT_OBJECT_0 != wait_code) {
-		printf("read_lock\n");
+		printf("read_locked\n");
 		return  FALSE;
-	}
-	printf("true\n");
+	}	
 	return TRUE;
 }
 
@@ -55,7 +51,7 @@ BOOL Write__Lock(Lock* my_Lock, int wait_time, int number_of_threads) {
 		if (WAIT_OBJECT_0 != wait_code) {
 			return  FALSE;
 		}
-	}	
+	}		
 	return TRUE;
 }
 
