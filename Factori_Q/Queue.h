@@ -1,5 +1,6 @@
 #ifndef QUEUE_H
 #define QUEUE_H
+#include <stdbool.h>
 typedef struct QClient
 {
 	int number;

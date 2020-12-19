@@ -90,5 +90,8 @@ bool Empty__Queue (Queue* my_Q)
 
 void Destroy__Queue(Queue* my_Q)
 {
-	while (Pop__Queue(my_Q) != -1);	
+	while (!Empty__Queue(my_Q))		
+	{
+		Pop__Queue(my_Q);
+	}
 }
