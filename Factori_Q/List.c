@@ -39,20 +39,32 @@ list* Add__ToList(list* head, int number)
 char* Print__List(list* head, int number, char* list_format_string, int memory_size)
 {
 	list* temp_head = head;
-	snprintf(list_format_string, memory_size, "The prime factors of %d are: ", number);
+	if (snprintf(list_format_string, memory_size, "The prime factors of %d are: ", number) == 0)
+	{
+		return NULL;
+	}
 	char* temp_string = list_format_string;
 	if (temp_head != NULL)
 	{
 		while (temp_head->next != NULL)
 		{
 			temp_string = list_format_string;
-			snprintf(list_format_string, memory_size, "%s%d, ", temp_string, temp_head->number);
+			if(snprintf(list_format_string, memory_size, "%s%d, ", temp_string, temp_head->number) == 0)
+			{
+				return NULL;
+			}
 			temp_head = temp_head->next;
 		}
 		temp_string = list_format_string;
-		snprintf(list_format_string, memory_size, "%s%d", temp_string, temp_head->number);
+		if(snprintf(list_format_string, memory_size, "%s%d", temp_string, temp_head->number) == 0)
+		{
+			return NULL;
+		}
 	}
-	snprintf(list_format_string, memory_size, "%s\r\n", temp_string);
+	if(snprintf(list_format_string, memory_size, "%s\r\n", temp_string) == 0)
+	{
+		return NULL;
+	}
 	return list_format_string;
 }
 

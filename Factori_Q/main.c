@@ -136,10 +136,17 @@ bool Write_Mission(HANDLE mission_file_handle, int mission_number)
 	char* list_format_string = (char*)malloc(sizeof(char) * memory_size);
 	if (list_format_string == NULL)
 	{
+		Free__List(current_mission_head);
 		printf("MEMORY_ALLOCATION_FAILURE");
 		return -1;
 	}
 	list_format_string = Print__List(current_mission_head, mission_number, list_format_string, memory_size);
+	if (list_format_string == NULL)
+	{
+		free(list_format_string);
+		Free__List(current_mission_head);
+		return -1;
+	}
 	SetFilePointerSimple(mission_file_handle, 0, FILE_END);
 	if (!WriteFile(mission_file_handle,
 		list_format_string,
@@ -176,7 +183,15 @@ Queue* Create_Priority_Queue(HANDLE priority_file_handle, int number_of_missions
 	}
 	return priority_Q;	
 }
-
+BOOL CloseHandleSimple(HANDLE h_to_close)
+{
+	if (CloseHandle(h_to_close) == 0)
+	{
+		printf("FAILED_TO_CLOSE_HANDLE");
+		return FALSE;
+	}
+	return TRUE;
+}
 DWORD WINAPI Read_And_Write(LPVOID lp_params)
 {
 	Thread_Params* p_thread_params = (Thread_Params*)lp_params;
@@ -201,6 +216,10 @@ DWORD WINAPI Read_And_Write(LPVOID lp_params)
 		if (mission_start_byte == -1){
 			Read__Release(p_thread_params->my_lock);	
 			printf("Queue is Empty");
+			if (CloseHandleSimple(mission_file_handle) == FALSE)
+			{
+				return -1;
+			}
 			return -1;
 		}
 		/*==========================================================================================*/
@@ -209,7 +228,11 @@ DWORD WINAPI Read_And_Write(LPVOID lp_params)
 		SetFilePointerSimple(mission_file_handle, mission_start_byte, FILE_BEGIN);
 		mission_number = Get_Mission(mission_file_handle);
 		if (mission_number == -1){//What if we get -1 as a mission?
-			Read__Release(p_thread_params->my_lock);			
+			Read__Release(p_thread_params->my_lock);	
+			if (CloseHandleSimple(mission_file_handle) == FALSE)
+			{
+				return -1;
+			}
 			return -1;
 		}
 		/*==========================================================================================*/
@@ -218,15 +241,18 @@ DWORD WINAPI Read_And_Write(LPVOID lp_params)
 		/* Secure Mission Writing and Write result at EOF */
 		while (Write__Lock__Mutex(p_thread_params->my_lock, WAIT_TIME_WRITE_LOCK) == FALSE);
 		while (Write__Lock(p_thread_params->my_lock, WAIT_TIME_WRITE_LOCK, p_thread_params->number_of_threads) == FALSE);
-		if (Write_Mission(mission_file_handle, mission_number) == false){			
+		if (Write_Mission(mission_file_handle, mission_number) == false){		
+			if (CloseHandleSimple(mission_file_handle) == FALSE)
+			{
+				return -1;
+			}
 			return -1;
 		}	
 		Write__Release(p_thread_params->my_lock, p_thread_params->number_of_threads);
 		Write__Release__Mutex(p_thread_params->my_lock);
 	}	
-	if (CloseHandle(mission_file_handle) == 0)
-	{
-		printf("FAILED_TO_CLOSE_HANDLE");
+	if (CloseHandleSimple(mission_file_handle) == FALSE)
+	{		
 		return -1;
 	}
 	return 1;
@@ -237,15 +263,7 @@ void Free__Thread_Params(Thread_Params* p_thread_params)
 	Destroy__lock(p_thread_params->my_lock);
 	free(p_thread_params);
 }
-BOOL CloseHandleSimple(HANDLE h_to_close)
-{
-	if (CloseHandle(h_to_close) == 0)
-	{
-		printf("FAILED_TO_CLOSE_HANDLE");
-		return FALSE;
-	}
-	return TRUE;
-}
+
 int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 	int number_of_missions, int number_of_threads) {
 	/*==========================================================================================*/
@@ -255,7 +273,11 @@ int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 		printf("MEMORY_ALLOCATION_FAILURE");
 		return -1;
 	}
-	snprintf(p_thread_params->mission_file_name, _MAX_PATH, "%s", mission_file_name);
+	if (snprintf(p_thread_params->mission_file_name, _MAX_PATH, "%s", mission_file_name) == 0)
+	{
+		free(p_thread_params);
+		return -1;
+	}
 	p_thread_params->number_of_missions = number_of_missions;
 	p_thread_params->number_of_threads = number_of_threads;
 	/* Create Queue and assume it to Thread Params */
@@ -263,21 +285,31 @@ int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 	priority_file_handle = CreateFileSimple(priority_file_name,
 		GENERIC_READ, 0, OPEN_EXISTING);
 	if (priority_file_handle == INVALID_HANDLE_VALUE) {
-		Free__Thread_Params(p_thread_params);
+		free(p_thread_params);
 		printf("FAILED_TO_OPEN");
 		return -1;
 	}
 	p_thread_params->priority_Q = Create_Priority_Queue(priority_file_handle, number_of_missions);
 	if (p_thread_params->priority_Q == NULL)
 	{
+		free(p_thread_params);
+		if (CloseHandleSimple(priority_file_handle) == FALSE)
+		{
+			return -1;
+		}			
+		return -1;
+	}
+	Lock* new_lock = New__Lock(number_of_threads);
+	if (new_lock == NULL)
+	{
+		free(p_thread_params);
+		Destroy__Queue(p_thread_params->priority_Q);
 		if (CloseHandleSimple(priority_file_handle) == FALSE)
 		{
 			return -1;
 		}
-		Free__Thread_Params(p_thread_params);				
 		return -1;
 	}
-	Lock* new_lock = New__Lock(number_of_threads);
 	p_thread_params->my_lock = new_lock;
 	/*==========================================================================================*/
 	/* Create Thread */
@@ -286,13 +318,13 @@ int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 	for (int i = 0; i < p_thread_params->number_of_threads; i++)
 	{
 		thread_handles[i] = CreateThreadSimple(Read_And_Write, p_thread_params, &(thread_id[i]));
-		if (thread_handles == NULL) {
+		if (thread_handles == NULL) {			
+			Free__Thread_Params(p_thread_params);
+			printf("FAILED_TO_CREATE_THREAD");
 			if (CloseHandleSimple(priority_file_handle) == FALSE)
 			{
 				return -1;
 			}
-			Free__Thread_Params(p_thread_params);
-			printf("FAILED_TO_CREATE_THREAD");
 			return -1;
 		}
 	}
@@ -302,19 +334,19 @@ int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 	DWORD wait_code;
 	wait_code = WaitForMultipleObjects(p_thread_params->number_of_threads, thread_handles, TRUE, WAIT_TIME);
 	if (WAIT_OBJECT_0 != wait_code) {
+		Free__Thread_Params(p_thread_params);
+		printf("Error when waiting");
 		if (CloseHandleSimple(priority_file_handle) == FALSE)
 		{
 			return -1;
-		}
-		Free__Thread_Params(p_thread_params);
-		printf("Error when waiting");
-		return -1;
-	}
-	if (CloseHandleSimple(priority_file_handle) == FALSE)
-	{
+		}		
 		return -1;
 	}
 	Free__Thread_Params(p_thread_params);
+	if (CloseHandleSimple(priority_file_handle) == FALSE)
+	{
+		return -1;
+	}	
 	return  1;
 }
 
