@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include "Queue.h"
 
 QClient* New__QClient(int number)
@@ -60,6 +61,7 @@ int Pop__Queue(Queue* my_Q)
 	}
 	else
 	{
+		//should we just free the my_Q->first? we dont need him anymore.
 		int retval = my_Q->first->number;
 		QClient* temp = my_Q->first;
 		if (my_Q->first == my_Q->last)
@@ -83,3 +85,19 @@ int Top__Queue(Queue* my_Q)
 	}
 }
 
+bool Empty__Queue (Queue* my_Q)
+{
+	if (my_Q->first == NULL || my_Q->last == NULL)
+	{
+		return true;
+	}
+	return false;
+}
+
+void Destroy__Queue(Queue* my_Q)
+{// if we free each link when we pop this function is very easy
+	while (Pop__Queue(my_Q) != -1)
+	{
+		continue;
+	}
+}
