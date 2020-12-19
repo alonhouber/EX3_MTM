@@ -9,52 +9,74 @@ Lock* New__Lock(int number_of_threads)
 		printf("MEMORY_ALLOCATION_FAILED");
 		return NULL;
 	}
-	my_lock->read_lock = CreateSemaphore(NULL, number_of_threads, number_of_threads, NULL);
+	my_lock->read_lock = CreateSemaphoreA(NULL, number_of_threads, number_of_threads, NULL);
 	if (my_lock->read_lock == NULL){
 		return NULL;
 	}
-	my_lock->write_lock = CreateSemaphore(NULL, number_of_threads, number_of_threads, NULL);
+	my_lock->write_lock = CreateSemaphoreA(NULL, number_of_threads, number_of_threads, NULL);
 	if (my_lock->write_lock == NULL) {
 		return NULL;
 	}
+	my_lock->write_lock_mutex = CreateMutexA(NULL, TRUE, NULL);
+	if (my_lock->write_lock_mutex == NULL) {
+		return NULL;
+	}
+	Write__Release__Mutex(my_lock);
 	return my_lock;
 }
 
 BOOL Write__Release(Lock* my_Lock, int number_of_threads) {
+	printf("Released_Write\n");
 	return ReleaseSemaphore(my_Lock->write_lock, number_of_threads, NULL);
 }
 
 BOOL Read__Release(Lock* my_Lock) {
+	printf("Released_Read\n");
 	return ReleaseSemaphore(my_Lock->read_lock, 1, NULL) && ReleaseSemaphore(my_Lock->write_lock, 1, NULL);
 }
 
 BOOL Read__Lock(Lock* my_Lock, int wait_time) {
 	DWORD wait_code;	
-	wait_code = WaitForSingleObject(my_Lock->write_lock, INFINITE);	
+	wait_code = WaitForSingleObject(my_Lock->write_lock, wait_time);
 	if (WAIT_OBJECT_0 != wait_code) {
 		printf("write_locked\n");
 		return  FALSE;
 	}	
-	wait_code = WaitForSingleObject(my_Lock->read_lock, INFINITE);
+	wait_code = WaitForSingleObject(my_Lock->read_lock, wait_time);
 	if (WAIT_OBJECT_0 != wait_code) {
 		printf("read_locked\n");
 		return  FALSE;
 	}	
+	printf("Start_Read\n");
 	return TRUE;
 }
 
 BOOL Write__Lock(Lock* my_Lock, int wait_time, int number_of_threads) {
 	DWORD wait_code;
 	for (int i = 0; i < number_of_threads; i++)
-	{
+	{		
 		wait_code = WaitForSingleObject(my_Lock->write_lock, wait_time);
+		printf("wait to write number %d\n", i + 1);
 		if (WAIT_OBJECT_0 != wait_code) {
 			return  FALSE;
 		}
 	}		
+	printf("Start_Write\n");
 	return TRUE;
 }
-
+BOOL Write__Lock__Mutex(Lock* my_Lock, int wait_time) {
+	DWORD wait_code;
+	wait_code = WaitForSingleObject(my_Lock->write_lock_mutex, wait_time);	
+	if (WAIT_OBJECT_0 != wait_code) {
+		printf("Mutex_Taken\n");
+		return  FALSE;
+	}	
+	printf("Mutex_Mine\n");
+	return TRUE;
+}
+BOOL Write__Release__Mutex(Lock* my_Lock) {
+	return ReleaseMutex(my_Lock->write_lock_mutex);
+}
 BOOL Destroy__lock(Lock* my_Lock)
 {
 	BOOL succeded = TRUE;

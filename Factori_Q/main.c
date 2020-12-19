@@ -8,19 +8,17 @@
 #include "Queue.h"
 #include "Lock.h"
 #include "List.h"
-
-
+#define DECIMAL_BASE (int)10
 #define READ_ONE_CHAR 1
 #define WAIT_TIME 20000
 #define MISSION_FILE_NAME_ARGUMENT 1
 #define PRIORITY_FILE_NAME_ARGUMENT 2
 #define MISSIONS_NUM_ARGUMET 3
 #define THREADS_NUM_ARGUMET 4
-#define WAIT_TIME_READ_LOCK 5000
-#define WAIT_TIME_WRITE_LOCK 5000
-#define DECIMAL_BASE (int)10
 #define START_OF_LINE_LEN 30
 #define COMMA_AND_SPACE_LEN 2
+#define WAIT_TIME_READ_LOCK 200
+#define WAIT_TIME_WRITE_LOCK 200
 
 list* Get__PrimeFactors(int number)
 {
@@ -45,6 +43,7 @@ list* Get__PrimeFactors(int number)
 	}
 	return p_prime_numbers_head;
 }
+
 typedef struct {
 	char mission_file_name[_MAX_PATH];	
 	int number_of_missions;
@@ -61,7 +60,7 @@ int char_to_int(char char_num)
 }
 /*========================================================================*/
 /* Input: File Handle to file of numbers
-   Output: The number in the current line which the handle points at
+   Output: The number in the current line which the handle points at.
    return -1 if Failed
    */
 int Get_Number(HANDLE file_handle)
@@ -103,8 +102,7 @@ int Get_Priority(HANDLE priority_file_handle)
 }
 int Get_Mission(HANDLE mission_file_handle)
 {
-	int mission = Get_Number(mission_file_handle);
-	return mission;
+	return Get_Number(mission_file_handle);	
 }
 /*========================================================================*/
 /* Input: File Handle to file of numbers and current mission number
@@ -112,12 +110,10 @@ int Get_Mission(HANDLE mission_file_handle)
    return false if Failed else true
    */
 bool Write_Mission(HANDLE mission_file_handle, int mission_number)
-{
-	printf("wrote?/n");
+{	
 	list* current_mission_head = NULL;
 	current_mission_head = Get__PrimeFactors(mission_number);
-	int memory_size = Get__line_list_length(current_mission_head, mission_number);
-	printf("Mem Size: %d\n", memory_size);
+	int memory_size = Get__line_list_length(current_mission_head, mission_number);	
 	char* list_format_string = (char*)malloc(sizeof(char) * memory_size);
 	list_format_string = Print__List(current_mission_head, mission_number, list_format_string, memory_size);
 	SetFilePointerSimple(mission_file_handle, 0, FILE_END);
@@ -170,13 +166,13 @@ DWORD WINAPI Read_And_Write(LPVOID lp_params)
 	/*==========================================================================================*/
 	/* Run Missions until Queue is Empty */	
 	while (!Empty__Queue(p_thread_params->priority_Q)){		
-		while (Read__Lock(p_thread_params->my_lock, WAIT_TIME_READ_LOCK) == FALSE);
-		printf("after Read_Lock while\n");
+		while (Read__Lock(p_thread_params->my_lock, WAIT_TIME_READ_LOCK) == FALSE);		
+		
 		/*==========================================================================================*/
 		/* Get Priority */
 		int mission_start_byte = Pop__Queue(p_thread_params->priority_Q);
 		if (mission_start_byte == -1){
-			Destroy__Queue(p_thread_params->priority_Q);
+			Read__Release(p_thread_params->my_lock);			
 			return -1;
 		}
 		/*==========================================================================================*/
@@ -185,18 +181,19 @@ DWORD WINAPI Read_And_Write(LPVOID lp_params)
 		SetFilePointerSimple(mission_file_handle, mission_start_byte, FILE_BEGIN);
 		mission_number = Get_Mission(mission_file_handle);
 		if (mission_number == -1){//What if we get -1 as a mission?
-			Destroy__Queue(p_thread_params->priority_Q);
+			Read__Release(p_thread_params->my_lock);	
 			return -1;
 		}			
 		Read__Release(p_thread_params->my_lock);		
 		/*==========================================================================================*/
 		/* Write Mission result at EOF */
+		while (Write__Lock__Mutex(p_thread_params->my_lock, WAIT_TIME_WRITE_LOCK) == FALSE);
 		while (Write__Lock(p_thread_params->my_lock, WAIT_TIME_WRITE_LOCK, p_thread_params->number_of_threads) == FALSE);
-		if (Write_Mission(mission_file_handle, mission_number) == false){
-			Destroy__Queue(p_thread_params->priority_Q);
+		if (Write_Mission(mission_file_handle, mission_number) == false){			
 			return -1;
 		}	
 		Write__Release(p_thread_params->my_lock, p_thread_params->number_of_threads);
+		Write__Release__Mutex(p_thread_params->my_lock);
 	}	
 	return 1;
 }

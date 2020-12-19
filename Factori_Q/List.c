@@ -1,5 +1,7 @@
 #include <string.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include "List.h"
 
 #define DECIMAL_BASE (int)10
