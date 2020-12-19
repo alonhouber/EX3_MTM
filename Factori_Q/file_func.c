@@ -1,12 +1,7 @@
 #include <Windows.h>
-#define ERROR_CODE -1
 #include <stdio.h>
+#include "HardCodedData.h"
 
-void ExitFailure(char* exit_message, int exitcode)
-{
-	printf("%s\n", exit_message);
-	exit(exitcode);
-}
 HANDLE CreateFileSimple(LPCSTR file_name, DWORD desired_access, DWORD share_mode, DWORD creation_disposition)
 {
 	return CreateFileA(file_name,
@@ -17,19 +12,19 @@ HANDLE CreateFileSimple(LPCSTR file_name, DWORD desired_access, DWORD share_mode
 		FILE_ATTRIBUTE_NORMAL,
 		NULL);
 }
-
 HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE p_start_routine, LPVOID p_params, LPDWORD p_thread_id)
 {
 	HANDLE thread_handle;
 	if (NULL == p_start_routine)
 	{
-		ExitFailure("Error when creating a thread\nReceived null pointer", ERROR_CODE);
+		printf("Error when creating a thread\nReceived null pointer");
 		return NULL;
 	}
 
 	if (NULL == p_thread_id)
 	{
-		ExitFailure("Error when creating a thread\nReceived null pointer", ERROR_CODE);
+		printf("Error when creating a thread\nReceived null pointer");
+		return NULL;
 	}
 
 	thread_handle = CreateThread(
@@ -42,12 +37,13 @@ HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE p_start_routine, LPVOID p_param
 
 	if (NULL == thread_handle)
 	{
-		ExitFailure("Couldn't create thread\n", ERROR_CODE);
+		printf("Couldn't create thread\n");
+		return NULL;
 	}
 	return thread_handle;
 
 }
-void SetFilePointerSimple(HANDLE file, long distance_to_move , DWORD move_method)
+int SetFilePointerSimple(HANDLE file, long distance_to_move , DWORD move_method)
 {
 	DWORD dw_ptr_low = SetFilePointer(file, distance_to_move, NULL, move_method);
 	//printf("DtM:%d\n", distance_to_move);
@@ -56,9 +52,12 @@ void SetFilePointerSimple(HANDLE file, long distance_to_move , DWORD move_method
 	{
 		if (!CloseHandle(file))
 		{
-			ExitFailure("HANDLE_CLOSING_ERROR", -1);
+			printf("HANDLE_CLOSING_ERROR");
+			return FAILURE_CODE;
 		}
 		printf("ERROR: %d\n", GetLastError());
-		ExitFailure("FAILED_TO_SET_FILE_POINTER", -1);
+		printf("FAILED_TO_SET_FILE_POINTER");
+		return FAILURE_CODE;
 	}
+	return 0;
 }

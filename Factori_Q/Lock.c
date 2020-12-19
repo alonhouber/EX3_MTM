@@ -25,13 +25,11 @@ Lock* New__Lock(int number_of_threads)
 	return my_lock;
 }
 
-BOOL Write__Release(Lock* my_Lock, int number_of_threads) {
-	printf("Released_Write\n");
+BOOL Write__Release(Lock* my_Lock, int number_of_threads) {	
 	return ReleaseSemaphore(my_Lock->write_lock, number_of_threads, NULL);
 }
 
-BOOL Read__Release(Lock* my_Lock) {
-	printf("Released_Read\n");
+BOOL Read__Release(Lock* my_Lock){	
 	return ReleaseSemaphore(my_Lock->read_lock, 1, NULL) && ReleaseSemaphore(my_Lock->write_lock, 1, NULL);
 }
 
@@ -46,8 +44,7 @@ BOOL Read__Lock(Lock* my_Lock, int wait_time) {
 	if (WAIT_OBJECT_0 != wait_code) {
 		printf("read_locked\n");
 		return  FALSE;
-	}	
-	printf("Start_Read\n");
+	}		
 	return TRUE;
 }
 
@@ -55,23 +52,19 @@ BOOL Write__Lock(Lock* my_Lock, int wait_time, int number_of_threads) {
 	DWORD wait_code;
 	for (int i = 0; i < number_of_threads; i++)
 	{		
-		wait_code = WaitForSingleObject(my_Lock->write_lock, wait_time);
-		printf("wait to write number %d\n", i + 1);
+		wait_code = WaitForSingleObject(my_Lock->write_lock, wait_time);		
 		if (WAIT_OBJECT_0 != wait_code) {
 			return  FALSE;
 		}
 	}		
-	printf("Start_Write\n");
 	return TRUE;
 }
 BOOL Write__Lock__Mutex(Lock* my_Lock, int wait_time) {
 	DWORD wait_code;
 	wait_code = WaitForSingleObject(my_Lock->write_lock_mutex, wait_time);	
-	if (WAIT_OBJECT_0 != wait_code) {
-		printf("Mutex_Taken\n");
+	if (WAIT_OBJECT_0 != wait_code) {		
 		return  FALSE;
-	}	
-	printf("Mutex_Mine\n");
+	}		
 	return TRUE;
 }
 BOOL Write__Release__Mutex(Lock* my_Lock) {
@@ -80,11 +73,11 @@ BOOL Write__Release__Mutex(Lock* my_Lock) {
 BOOL Destroy__lock(Lock* my_Lock)
 {
 	BOOL succeded = TRUE;
-	if (CloseHandle(my_Lock->read_lock) == 0)
+	if (CloseHandle(my_Lock->read_lock) == FALSE)
 	{
 		succeded = FALSE;
 	}
-	if (CloseHandle(my_Lock->write_lock) == 0)
+	if (CloseHandle(my_Lock->write_lock) == FALSE)
 	{
 		succeded = FALSE;
 	}
