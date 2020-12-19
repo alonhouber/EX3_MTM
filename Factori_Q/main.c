@@ -244,7 +244,7 @@ DWORD WINAPI Read_And_Write(LPVOID lp_params)
 	/* Open Mission File */
 	HANDLE mission_file_handle = NULL;
 	mission_file_handle = CreateFileSimple(p_thread_params->mission_file_name,
-		(GENERIC_READ | GENERIC_WRITE) , 0, OPEN_EXISTING);
+		(GENERIC_READ | GENERIC_WRITE) , FILE_SHARE_READ | FILE_SHARE_WRITE, OPEN_EXISTING);
 	if (mission_file_handle == INVALID_HANDLE_VALUE){
 		DWORD dw = GetLastError();
 		printf("error: %d/n", dw);
@@ -252,15 +252,7 @@ DWORD WINAPI Read_And_Write(LPVOID lp_params)
 		return -1;
 	}		
 	/*==========================================================================================*/
-	/* Run Missions until Queue is Empty */
-	
-	/*printf("before Read_Lock while\n");	
-	
-	{		
-		printf("Cant Read\n");		
-	}
-	printf("after Read_Lock while\n");*/
-	
+	/* Run Missions until Queue is Empty */	
 	while (!Empty__Queue(p_thread_params->priority_Q)){		
 		while (Read__Lock(p_thread_params->my_lock, WAIT_TIME_READ_LOCK) == FALSE);
 		printf("after Read_Lock while\n");
@@ -292,52 +284,62 @@ DWORD WINAPI Read_And_Write(LPVOID lp_params)
 	}	
 	return 1;
 }
+void Free__Thread_Params(Thread_Params* p_thread_params)
+{
+	Destroy__Queue(p_thread_params->priority_Q);
+	Destroy__lock(p_thread_params->my_lock);
+	free(p_thread_params);
+}
 
 int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
-	int number_of_missions, int number_of_threads){
+	int number_of_missions, int number_of_threads) {
 	/*==========================================================================================*/
 	/* Create Thread Params */
 	Thread_Params* p_thread_params = (Thread_Params*)malloc(sizeof(Thread_Params));
-	if (p_thread_params == NULL){
+	if (p_thread_params == NULL) {
 		printf("MEMORY_ALLOCATION_FAILURE");
 		return -1;
-	}	
-	snprintf(p_thread_params->mission_file_name, _MAX_PATH, "%s", mission_file_name);	
+	}
+	snprintf(p_thread_params->mission_file_name, _MAX_PATH, "%s", mission_file_name);
 	p_thread_params->number_of_missions = number_of_missions;
 	p_thread_params->number_of_threads = number_of_threads;
 	/* Create Queue and assume it to Thread Params */
 	HANDLE priority_file_handle;
 	priority_file_handle = CreateFileSimple(priority_file_name,
 		GENERIC_READ, 0, OPEN_EXISTING);
-	if (priority_file_handle == INVALID_HANDLE_VALUE){
-		free(p_thread_params);
+	if (priority_file_handle == INVALID_HANDLE_VALUE) {
+		Free__Thread_Params(p_thread_params);
 		ExitFailure("FAILED_TO_OPEN", -1);
 		return -1;
-	}	
+	}
 	p_thread_params->priority_Q = Create_Priority_Queue(priority_file_handle, number_of_missions);
 
 	Lock* new_lock = New__Lock(number_of_threads);
-	p_thread_params->my_lock = new_lock;	
+	p_thread_params->my_lock = new_lock;
 	/*==========================================================================================*/
 	/* Create Thread */
-	HANDLE thread_handle;
-	DWORD thread_id;
-	thread_handle = CreateThreadSimple(Read_And_Write, p_thread_params, &thread_id);
-	if (thread_handle == NULL){
-		free(p_thread_params);
-		ExitFailure("FAILED_TO_CREATE_THREAD", -1);
-		return -1;
+	HANDLE thread_handles[MAXIMUM_WAIT_OBJECTS];
+	DWORD thread_id[MAXIMUM_WAIT_OBJECTS];
+	for (int i = 0; i < p_thread_params->number_of_threads; i++)
+	{
+		thread_handles[i] = CreateThreadSimple(Read_And_Write, p_thread_params, &(thread_id[i]));
+		if (thread_handles == NULL) {
+			Free__Thread_Params(p_thread_params);
+			ExitFailure("FAILED_TO_CREATE_THREAD", -1);
+			return -1;
+		}
 	}
+
 	/*==========================================================================================*/
 	/* Wait for Thread */
 	DWORD wait_code;
-	wait_code = WaitForSingleObject(thread_handle, WAIT_TIME);
-	if (WAIT_OBJECT_0 != wait_code){
-		free(p_thread_params);
+	wait_code = WaitForMultipleObjects(p_thread_params->number_of_threads, thread_handles, TRUE, WAIT_TIME);
+	if (WAIT_OBJECT_0 != wait_code) {
+		Free__Thread_Params(p_thread_params);
 		printf("Error when waiting");
-		return  -1;
-	}	
-	free(p_thread_params);
+		return -1;
+	}
+	Free__Thread_Params(p_thread_params);
 	return  1;
 }
 
