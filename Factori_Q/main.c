@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include "file_func.h"
 #include "Queue.h"
+#include "Lock.h"
 
 #define DECIMAL_BASE (int)10
 #define READ_ONE_CHAR 1
@@ -16,7 +17,8 @@
 #define THREADS_NUM_ARGUMET 4
 #define START_OF_LINE_LEN 30
 #define COMMA_AND_SPACE_LEN 2
-
+#define WAIT_TIME_READ_LOCK 50
+#define WAIT_TIME_WRITE_LOCK 50
 typedef struct list_t {
 	int number;
 	struct list_t* next;
@@ -130,6 +132,7 @@ typedef struct {
 	char mission_file_name[_MAX_PATH];	
 	int number_of_missions;
 	Queue* priority_Q;
+	Lock* my_lock;
 }Thread_Params;
 
 int char_to_int(char char_num)
@@ -245,6 +248,7 @@ DWORD WINAPI Read_And_Write(LPVOID lp_params)
 	}		
 	/*==========================================================================================*/
 	/* Run Missions until Queue is Empty */
+	while (Read__Lock(p_thread_params->my_lock->read_lock, WAIT_TIME_READ_LOCK) == FALSE);
 	while (!Empty__Queue(p_thread_params->priority_Q)){
 		/*==========================================================================================*/
 		/* Get Priority */
@@ -262,12 +266,16 @@ DWORD WINAPI Read_And_Write(LPVOID lp_params)
 			Destroy__Queue(p_thread_params->priority_Q);
 			return -1;
 		}
+		Read__Release(p_thread_params->my_lock);
+		Write__Release(p_thread_params->my_lock);		
 		/*==========================================================================================*/
 		/* Write Mission result at EOF */
+		while (Write__Lock(p_thread_params->my_lock, WAIT_TIME_WRITE_LOCK) == FALSE);
 		if (Write_Mission(mission_file_handle, mission_number) == false){
 			Destroy__Queue(p_thread_params->priority_Q);
 			return -1;
-		}		
+		}	
+		Write__Release(p_thread_params->my_lock);
 	}	
 	return 1;
 }
@@ -293,6 +301,9 @@ int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 		return -1;
 	}	
 	p_thread_params->priority_Q = Create_Priority_Queue(priority_file_handle, number_of_missions);
+
+	Lock* lock = New__Lock(number_of_threads);
+	p_thread_params->my_lock = lock;
 	/*==========================================================================================*/
 	/* Create Thread */
 	HANDLE thread_handle;
