@@ -10,11 +10,11 @@ Lock* New__Lock(int number_of_threads)
 		printf("MEMORY_ALLOCATION_FAILED");
 		return NULL;
 	}
-	my_lock->read_lock = CreateSemaphoreA(NULL, number_of_threads, number_of_threads, NULL);
+	my_lock->read_lock = CreateSemaphoreA(NULL, 0, number_of_threads, NULL);
 	if (my_lock->read_lock == NULL){
 		return NULL;
 	}
-	my_lock->write_lock = CreateSemaphoreA(NULL, number_of_threads, number_of_threads, NULL);
+	my_lock->write_lock = CreateSemaphoreA(NULL, 0, number_of_threads, NULL);
 	if (my_lock->write_lock == NULL) {
 		return NULL;
 	}
@@ -26,20 +26,24 @@ BOOL Write__Release(Lock* my_Lock, int number_of_threads) {
 }
 
 BOOL Read__Release(Lock* my_Lock) {
-	ReleaseSemaphore(my_Lock->write_lock, 1, NULL);
-	return ReleaseSemaphore(my_Lock->read_lock, 1, NULL);
+	return ReleaseSemaphore(my_Lock->read_lock, 1, NULL) && ReleaseSemaphore(my_Lock->write_lock, 1, NULL);
 }
 
 BOOL Read__Lock(Lock* my_Lock, int wait_time) {
 	DWORD wait_code;
+	printf("before wait_code\n");
 	wait_code = WaitForSingleObject(my_Lock->write_lock, wait_time);
+	printf("after wait_code\n");
 	if (WAIT_OBJECT_0 != wait_code) {
-		return  FALSE;
-	}	
-	wait_code = WaitForSingleObject(my_Lock->read_lock, wait_time);
-	if (WAIT_OBJECT_0 != wait_code) {
+		printf("write_lock\n");
 		return  FALSE;
 	}
+	wait_code = WaitForSingleObject(my_Lock->read_lock, wait_time);
+	if (WAIT_OBJECT_0 != wait_code) {
+		printf("read_lock\n");
+		return  FALSE;
+	}
+	printf("true\n");
 	return TRUE;
 }
 
