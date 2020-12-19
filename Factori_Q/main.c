@@ -138,6 +138,11 @@ int char_to_int(char char_num)
 		return char_num - '0';
 	return 0;
 }
+/*========================================================================*/
+/* Input: File Handle to file of numbers
+   Output: The number in the current line which the handle points at
+   return -1 if Failed
+   */
 int Get_Number(HANDLE file_handle)
 {
 	char current_char = '\0';
@@ -180,6 +185,11 @@ int Get_Mission(HANDLE mission_file_handle)
 	int mission = Get_Number(mission_file_handle);
 	return mission;
 }
+/*========================================================================*/
+/* Input: File Handle to file of numbers and current mission number
+   Output: Write the formatted result of the mission number to EOF
+   return false if Failed else true
+   */
 bool Write_Mission(HANDLE mission_file_handle, int mission_number)
 {
 	list* current_mission_head = NULL;
@@ -281,7 +291,7 @@ int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 	
 	snprintf(p_thread_params->mission_file_name, _MAX_PATH, "%s", mission_file_name);	
 	p_thread_params->number_of_missions = number_of_missions;
-
+	/* Create Queue and assume it to Thread Params */
 	HANDLE priority_file_handle;
 	priority_file_handle = CreateFileSimple(priority_file_name,
 		GENERIC_READ, 0, OPEN_EXISTING);
@@ -290,9 +300,10 @@ int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 		free(p_thread_params);
 		ExitFailure("FAILED_TO_OPEN", -1);
 		return -1;
-	}
+	}	
 	p_thread_params->priority_Q = Create_Priority_Queue(priority_file_handle, number_of_missions);
 	/*==========================================================================================*/
+
 	/* Create Thread */
 	HANDLE thread_handle;
 	DWORD thread_id;
