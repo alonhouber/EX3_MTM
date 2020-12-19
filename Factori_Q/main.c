@@ -1,3 +1,4 @@
+@@ - 0, 0 + 1, 293 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -22,7 +23,7 @@ typedef struct list_t {
 }list;
 list* New__List(int number)
 {
-	list* new_list = (list*) malloc(sizeof(list));	
+	list* new_list = (list*)malloc(sizeof(list));
 	if (new_list != NULL)
 	{
 		new_list->number = number;
@@ -76,7 +77,7 @@ int Get__line_list_length(list* head, int num)
 char* Print__List(list* head, int number, char* list_format_string, int memory_size)
 {
 	list* temp_head = head;
-	snprintf(list_format_string, memory_size, "The prime factors of %d are: ", number);	
+	snprintf(list_format_string, memory_size, "The prime factors of %d are: ", number);
 	char* temp_string = list_format_string;
 	if (temp_head != NULL)
 	{
@@ -93,10 +94,10 @@ char* Print__List(list* head, int number, char* list_format_string, int memory_s
 	return list_format_string;
 }
 void Free__List(list* head)
-{	
+{
 	list* temp = head;
 	while (head != NULL)
-	{		
+	{
 		head = head->next;
 		free(temp);
 		temp = head;
@@ -107,21 +108,21 @@ list* Get__PrimeFactors(int number)
 	list* p_prime_numbers_head = NULL;
 	while (number % 2 == 0)
 	{
-		p_prime_numbers_head = Add__ToList(p_prime_numbers_head,2);
+		p_prime_numbers_head = Add__ToList(p_prime_numbers_head, 2);
 		number /= 2;
 	}
 	int factor_to_check = 3;
-	for  (;  factor_to_check <= (int)sqrt(number) ; factor_to_check+=2)
+	for (; factor_to_check <= (int)sqrt(number); factor_to_check += 2)
 	{
 		while (number % factor_to_check == 0)
 		{
-			p_prime_numbers_head = Add__ToList(p_prime_numbers_head,factor_to_check);
+			p_prime_numbers_head = Add__ToList(p_prime_numbers_head, factor_to_check);
 			number /= factor_to_check;
 		}
 	}
 	if (number > 2)
 	{
-		p_prime_numbers_head = Add__ToList(p_prime_numbers_head,number);
+		p_prime_numbers_head = Add__ToList(p_prime_numbers_head, number);
 	}
 	return p_prime_numbers_head;
 }
@@ -133,7 +134,7 @@ typedef struct {
 
 int char_to_int(char char_num)
 {
-	if(char_num >= '0' && char_num <= '9')
+	if (char_num >= '0' && char_num <= '9')
 		return char_num - '0';
 	return 0;
 }
@@ -218,7 +219,7 @@ DWORD WINAPI Read_And_Write(LPVOID lp_params)
 			}
 		}
 		list* current_mission_head = NULL;
-		current_mission_head = Get__PrimeFactors(mission_number);		
+		current_mission_head = Get__PrimeFactors(mission_number);
 		int memory_size = Get__line_list_length(current_mission_head, mission_number);
 		printf("Mem Size: %d\n", memory_size);
 		char* list_format_string = (char*)malloc(sizeof(char) * memory_size);
@@ -274,7 +275,7 @@ int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 
 int main(int argc, char* argv[])
 {
-	Queue* priorities_Q = New__Queue();	
+	Queue* priorities_Q = New__Queue();
 	int missions_num, threads_num;
 	missions_num = strtol(argv[MISSIONS_NUM_ARGUMET], NULL, DECIMAL_BASE);
 	threads_num = strtol(argv[THREADS_NUM_ARGUMET], NULL, DECIMAL_BASE);
@@ -282,12 +283,12 @@ int main(int argc, char* argv[])
 	/*printf("Enter Number (-1 to stop): \n");
 	scanf_s("%d", &x);
 	while (x != -1)
-	{		
-		list* head = Get__PrimeFactors(x);		
+	{
+		list* head = Get__PrimeFactors(x);
 		Print__List(head, x);
 		Free__List(head);
 		printf("Enter Number (-1 to stop): \n");
-		scanf_s("%d", &x);		
+		scanf_s("%d", &x);
 	}*/
 	return 0;
 }
