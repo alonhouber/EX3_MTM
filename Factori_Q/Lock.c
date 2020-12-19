@@ -41,4 +41,19 @@ BOOL Read__Release(Lock* my_Lock) {
 	return ReleaseSemaphore(my_Lock->read_lock, 1, NULL);
 }
 
+BOOL Destroy__lock(Lock* my_Lock)
+{
+	BOOL succeded = TRUE;
+	if (CloseHandle(my_Lock->read_lock) == 0)
+	{
+		succeded = FALSE;
+	}
+	if (CloseHandle(my_Lock->write_lock) == 0)
+	{
+		succeded = FALSE;
+	}
+	free(my_Lock);
+	return succeded;
+}
+
 
