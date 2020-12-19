@@ -81,6 +81,10 @@ BOOL Destroy__lock(Lock* my_Lock)
 	{
 		succeded = FALSE;
 	}
+	if (CloseHandle(my_Lock->write_lock_mutex) == FALSE)
+	{
+		succeded = FALSE;
+	}
 	free(my_Lock);
 	return succeded;
 }
