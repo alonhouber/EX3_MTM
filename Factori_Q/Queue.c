@@ -99,4 +99,5 @@ void Destroy__Queue(Queue* my_Q)
 	{
 		Pop__Queue(my_Q);
 	}
+	free(my_Q);
 }
