@@ -9,6 +9,10 @@
 #include "Lock.h"
 #include "List.h"
 #include "HardCodedData.h"
+
+#define _CRTDBG_MAP_ALLOC
+#include <crtdbg.h>
+
 list* Get__PrimeFactors(int number)
 {
 	list* p_prime_numbers_head = NULL;
@@ -379,6 +383,7 @@ int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 
 int main(int argc, char* argv[])
 {	
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	int missions_num, threads_num;
 	missions_num = (int)strtol(argv[MISSIONS_NUM_ARGUMET], NULL, DECIMAL_BASE);
 	threads_num = (int)strtol(argv[THREADS_NUM_ARGUMET], NULL, DECIMAL_BASE);
