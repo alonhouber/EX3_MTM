@@ -17,16 +17,14 @@ Lock* New__Lock(int number_of_threads)
 	if (my_lock->write_lock == NULL) {
 		return NULL;
 	}
-	my_lock->write_lock_mutex = CreateMutexA(NULL, TRUE, NULL);
+	my_lock->write_lock_mutex = CreateMutexA(NULL, FALSE, NULL);
 	if (my_lock->write_lock_mutex == NULL) {
 		return NULL;
-	}
-	Write__Release__Mutex(my_lock);
-	my_lock->pop_lock_mutex = CreateMutexA(NULL, TRUE, NULL);
+	}	
+	my_lock->pop_lock_mutex = CreateMutexA(NULL, FALSE, NULL);
 	if (my_lock->pop_lock_mutex == NULL) {
 		return NULL;
-	}
-	Pop__Release__Mutex(my_lock);
+	}	
 	return my_lock;
 }
 

@@ -12,6 +12,10 @@
 list* Get__PrimeFactors(int number)
 {
 	list* p_prime_numbers_head = NULL;
+	if (number == 0)
+	{
+		return p_prime_numbers_head;
+	}
 	while (number % 2 == 0)
 	{
 		p_prime_numbers_head = Add__ToList(p_prime_numbers_head, 2);
@@ -168,7 +172,7 @@ Queue* Create_Priority_Queue(HANDLE priority_file_handle, int number_of_missions
 		printf("MEMORY_ALLOCATION_FAILED\n");
 		return NULL;
 	}
-	int priority_number = 0;
+	int priority_number;
 	while (priority_Q->client_count < number_of_missions)
 	{		
 		priority_number = Get_Priority(priority_file_handle);
@@ -273,7 +277,6 @@ void Free__Thread_Params(Thread_Params* p_thread_params)
 	Destroy__lock(p_thread_params->my_lock);
 	free(p_thread_params);
 }
-
 int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 	int number_of_missions, int number_of_threads) {
 	/*==========================================================================================*/
