@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "Queue.h"
-
+#include "HardCodedData.h"
 QClient* New__QClient(int number)
 {
 	QClient* new_client = (QClient*)malloc(sizeof(QClient));
@@ -28,9 +28,13 @@ Queue* New__Queue()
 	return new_Q;
 }
 
-void Push__Queue(Queue* my_Q , int number)
+int Push__Queue(Queue* my_Q , int number)
 {
 	QClient* new_QC = New__QClient(number);
+	if (new_QC == NULL)
+	{
+		return FAILURE_CODE;
+	}
 	if (Empty__Queue(my_Q))
 	{		
 		my_Q->first = new_QC;
@@ -42,6 +46,7 @@ void Push__Queue(Queue* my_Q , int number)
 		my_Q->last = new_QC;
 	}
 	(my_Q->client_count)++;
+	return 0;
 }
 
 int Pop__Queue(Queue* my_Q)

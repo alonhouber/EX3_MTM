@@ -15,9 +15,8 @@ typedef struct Queue
 }Queue;
 
 Queue* New__Queue();
-//Queue New__Queue1();
 
-void Push__Queue(Queue* my_Q, int number);
+int Push__Queue(Queue* my_Q, int number);
 int Pop__Queue(Queue* my_Q);
 int Top__Queue(Queue* my_Q);
 bool Empty__Queue(Queue* my_Q);
