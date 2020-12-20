@@ -1,3 +1,11 @@
+/*
+	Alon Houber 315435495
+	Dvir Ben Zikri 315409508
+	Project - Factori
+	Gets file of mission(numbers) and write their prime factor back to the same file
+	The missions are read and written in the order instructed by another file - priority file
+	Furthermore it does so by spliting the work between a number of threads( which it gets from command line)
+*/
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -9,9 +17,6 @@
 #include "Lock.h"
 #include "List.h"
 #include "HardCodedData.h"
-
-#define _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
 
 /*========================================================================*/
 //Get the prime factors of a number and returns a list they are stored in.
@@ -74,7 +79,7 @@ int char_to_int(char char_num)
 /*========================================================================*/
 /* Input: File Handle to file of numbers
    Output: The number in the current line which the handle points at.
-   return -1 if Failed
+   return FAILURE_CODE(-1) if Failed
    */
 int Get_Number(HANDLE file_handle)
 {
@@ -88,7 +93,7 @@ int Get_Number(HANDLE file_handle)
 		NULL))
 	{
 		printf("READ_FILE_FAIL\n");
-		return -1;
+		return FAILURE_CODE;
 	}
 	while (current_char != '\r')
 	{
@@ -102,7 +107,7 @@ int Get_Number(HANDLE file_handle)
 			NULL))
 		{
 			printf("READ_FILE_FAIL\n");
-			return -1;
+			return FAILURE_CODE;
 		}
 	}
 	return number;
@@ -131,7 +136,7 @@ bool Write_Mission(HANDLE mission_file_handle, int mission_number)
 	current_mission_head = Get__PrimeFactors(mission_number);
 	if (current_mission_head == NULL)
 	{
-		if (mission_number >= 2)
+		if (mission_number >= MIN_NUM_TO_HAVE_PRIMES)
 		{
 			return false;
 		}		
@@ -189,7 +194,7 @@ Queue* Create_Priority_Queue(HANDLE priority_file_handle, int number_of_missions
 	while (priority_Q->client_count < number_of_missions)
 	{		
 		priority_number = Get_Priority(priority_file_handle);
-		if (priority_number == -1)
+		if (priority_number == FAILURE_CODE)
 		{
 			return NULL;
 		}
@@ -242,11 +247,7 @@ DWORD WINAPI Read_And_Write(LPVOID lp_params)
 		if (mission_start_byte == -1){
 			Read__Release(p_thread_params->my_lock);	
 			printf("Queue is Empty\n");
-			if (CloseHandleSimple(mission_file_handle) == FALSE)
-			{
-				return FAILURE_CODE;
-			}
-			return FAILURE_CODE;
+			continue;
 		}
 		/*==========================================================================================*/
 		/* Get Mission */
@@ -309,12 +310,12 @@ int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 	Thread_Params* p_thread_params = (Thread_Params*)malloc(sizeof(Thread_Params));
 	if (p_thread_params == NULL) {
 		printf("MEMORY_ALLOCATION_FAILURE\n");
-		return -1;
+		return FAILURE_CODE;
 	}
 	if (snprintf(p_thread_params->mission_file_name, _MAX_PATH, "%s", mission_file_name) == 0)
 	{
 		free(p_thread_params);
-		return -1;
+		return FAILURE_CODE;
 	}
 	p_thread_params->number_of_missions = number_of_missions;
 	p_thread_params->number_of_threads = number_of_threads;
@@ -325,7 +326,7 @@ int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 	if (priority_file_handle == INVALID_HANDLE_VALUE) {
 		free(p_thread_params);
 		printf("FAILED_TO_OPEN\n");
-		return -1;
+		return FAILURE_CODE;
 	}
 	p_thread_params->priority_Q = Create_Priority_Queue(priority_file_handle, number_of_missions);
 	if (p_thread_params->priority_Q == NULL)
@@ -333,9 +334,9 @@ int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 		free(p_thread_params);
 		if (CloseHandleSimple(priority_file_handle) == FALSE)
 		{
-			return -1;
+			return FAILURE_CODE;
 		}			
-		return -1;
+		return FAILURE_CODE;
 	}
 	Lock* new_lock = New__Lock(number_of_threads);
 	if (new_lock == NULL)
@@ -344,9 +345,9 @@ int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 		free(p_thread_params);
 		if (CloseHandleSimple(priority_file_handle) == FALSE)
 		{
-			return -1;
+			return FAILURE_CODE;
 		}
-		return -1;
+		return FAILURE_CODE;
 	}
 	p_thread_params->my_lock = new_lock;
 	/*==========================================================================================*/
@@ -364,7 +365,7 @@ int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 				CloseHandleSimple(thread_handles[j]);				
 			}
 			CloseHandleSimple(priority_file_handle);
-			return -1;
+			return FAILURE_CODE;
 		}
 	}
 
@@ -381,9 +382,9 @@ int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 		}
 		if (CloseHandleSimple(priority_file_handle) == FALSE)
 		{
-			return -1;
+			return FAILURE_CODE;
 		}		
-		return -1;
+		return FAILURE_CODE;
 	}
 	Free__Thread_Params(p_thread_params);
 	BOOL close_handle_success = TRUE;
@@ -400,23 +401,22 @@ int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 	}	
 	if (!close_handle_success)
 	{
-		return -1;
+		return FAILURE_CODE;
 	}
-	return  1;
+	return  0;
 }
 /*========================================================================*/
 /*
 Main function. Handle the CMD arguments and create the threads.
 */
 int main(int argc, char* argv[])
-{	
-	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+{		
 	int missions_num, threads_num;
 	missions_num = (int)strtol(argv[MISSIONS_NUM_ARGUMET], NULL, DECIMAL_BASE);
 	threads_num = (int)strtol(argv[THREADS_NUM_ARGUMET], NULL, DECIMAL_BASE);
 	if (Create_And_Handle_Threads(argv[MISSION_FILE_NAME_ARGUMENT], argv[PRIORITY_FILE_NAME_ARGUMENT], missions_num, threads_num) == -1)
 	{
-		return -1;
+		return FAILURE_CODE;
 	}	
 	return 0;
 }

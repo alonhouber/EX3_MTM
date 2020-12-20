@@ -13,5 +13,6 @@
 #define WAIT_TIME_READ_LOCK 200
 #define WAIT_TIME_WRITE_LOCK 200
 #define FAILURE_CODE -1
+#define MIN_NUM_TO_HAVE_PRIMES 2
 
 #endif 
