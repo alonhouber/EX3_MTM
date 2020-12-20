@@ -1,7 +1,12 @@
 #include <Windows.h>
 #include <stdio.h>
 #include "HardCodedData.h"
-
+/*========================================================================*/
+/*
+Input: file_name, desired_access, share_mode, creation_disposition
+Output: HANDLE to file
+Creats file simply.
+*/
 HANDLE CreateFileSimple(LPCSTR file_name, DWORD desired_access, DWORD share_mode, DWORD creation_disposition)
 {
 	return CreateFileA(file_name,
@@ -12,6 +17,12 @@ HANDLE CreateFileSimple(LPCSTR file_name, DWORD desired_access, DWORD share_mode
 		FILE_ATTRIBUTE_NORMAL,
 		NULL);
 }
+/*========================================================================*/
+/*
+Input: p_start_routine, p_params, p_thread_id
+Output: HANDLE to thread
+Creats thread simply.
+*/
 HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE p_start_routine, LPVOID p_params, LPDWORD p_thread_id)
 {
 	HANDLE thread_handle;
@@ -43,6 +54,12 @@ HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE p_start_routine, LPVOID p_param
 	return thread_handle;
 
 }
+/*========================================================================*/
+/*
+Input: HANDLE to file, distance_to_move, move_method
+Output: 0 if succseded (-1 otherwise).
+Set a poiter of file in disired location (distance_to_move bytes from start).
+*/
 int SetFilePointerSimple(HANDLE file, long distance_to_move , DWORD move_method)
 {
 	DWORD dw_ptr_low = SetFilePointer(file, distance_to_move, NULL, move_method);

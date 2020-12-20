@@ -5,6 +5,11 @@
 #include "List.h"
 #include "HardCodedData.h"
 
+/*========================================================================*/
+/*
+Recives a number and create a new list (with that number).
+Returns header to list.
+*/
 list* New__List(int number)
 {
 	list* new_list = (list*)malloc(sizeof(list));
@@ -15,7 +20,11 @@ list* New__List(int number)
 	}
 	return new_list;
 }
-
+/*========================================================================*/
+/*
+Recives a head of list and a number.
+Add that number to the list and return head of list.
+*/
 list* Add__ToList(list* head, int number)
 {
 	if (head == NULL)
@@ -36,7 +45,11 @@ list* Add__ToList(list* head, int number)
 	}
 	return head;
 }
-
+/*========================================================================*/
+/*
+Recives head of list, memory_size, number and the format of writing to file.
+Returns char* that holds the string we need to Write to file.
+*/
 char* Print__List(list* head, int number, char* list_format_string, int memory_size)
 {
 	list* temp_head = head;
@@ -68,7 +81,10 @@ char* Print__List(list* head, int number, char* list_format_string, int memory_s
 	}
 	return list_format_string;
 }
-
+/*========================================================================*/
+/*
+get the length of string that stores a number.
+*/
 int get_len_of_num(int num)
 {
 	int counter = 0;
@@ -79,7 +95,10 @@ int get_len_of_num(int num)
 	}
 	return counter;
 }
-
+/*========================================================================*/
+/*
+Recives a list and number, and Returns the length of line of numbers with commas and spaces between.
+*/
 int Get__line_list_length(list* head, int num)
 {
 	list* current_pos = head;

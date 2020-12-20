@@ -13,6 +13,8 @@
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
 
+/*========================================================================*/
+//Get the prime factors of a number and returns a list they are stored in.
 list* Get__PrimeFactors(int number)
 {
 	list* p_prime_numbers_head = NULL;
@@ -61,6 +63,8 @@ typedef struct {
 	int number_of_threads;
 }Thread_Params;
 
+/*========================================================================*/
+//Recives a char and returns the numbet it converts to (int). 
 int char_to_int(char char_num)
 {
 	if (char_num >= '0' && char_num <= '9')
@@ -120,7 +124,7 @@ int Get_Mission(HANDLE mission_file_handle)
 /* Input: File Handle to file of numbers and current mission number
    Output: Write the formatted result of the mission number to EOF
    return false if Failed else true
-   */
+*/
 bool Write_Mission(HANDLE mission_file_handle, int mission_number)
 {	
 	list* current_mission_head = NULL;
@@ -168,6 +172,11 @@ bool Write_Mission(HANDLE mission_file_handle, int mission_number)
 	Free__List(current_mission_head);
 	return true;
 }
+/*========================================================================*/
+/*
+Recives Handle to Priority file and the amount of missions.
+Create priority queue and return Queue.
+*/
 Queue* Create_Priority_Queue(HANDLE priority_file_handle, int number_of_missions)
 {
 	Queue* priority_Q = New__Queue();
@@ -200,6 +209,13 @@ BOOL CloseHandleSimple(HANDLE h_to_close)
 	}
 	return TRUE;
 }
+/*========================================================================*/
+/*
+Recives parameters of the handle.
+A function that is used by every thread, to read and write missions.
+Depends on the lock, the function decides if a thread can write to file.
+Return DWORD (0 if succseded, -1 otherwise).
+*/
 DWORD WINAPI Read_And_Write(LPVOID lp_params)
 {
 	Thread_Params* p_thread_params = (Thread_Params*)lp_params;
@@ -281,6 +297,11 @@ void Free__Thread_Params(Thread_Params* p_thread_params)
 	Destroy__lock(p_thread_params->my_lock);
 	free(p_thread_params);
 }
+/*========================================================================*/
+/*
+Creats thread and handle its operation.
+Recives all CMD arguments and return 0 if succsede (-1 otherwise).
+*/
 int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 	int number_of_missions, int number_of_threads) {
 	/*==========================================================================================*/
@@ -383,7 +404,10 @@ int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 	}
 	return  1;
 }
-
+/*========================================================================*/
+/*
+Main function. Handle the CMD arguments and create the threads.
+*/
 int main(int argc, char* argv[])
 {	
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
