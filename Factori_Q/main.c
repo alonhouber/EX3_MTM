@@ -212,7 +212,9 @@ DWORD WINAPI Read_And_Write(LPVOID lp_params)
 		while (Read__Lock(p_thread_params->my_lock, WAIT_TIME_READ_LOCK) == FALSE);			
 		/*==========================================================================================*/
 		/* Get Priority */
+		while (Pop__Lock__Mutex(p_thread_params->my_lock, WAIT_TIME_WRITE_LOCK) == FALSE);		
 		int mission_start_byte = Pop__Queue(p_thread_params->priority_Q);
+		Pop__Release__Mutex(p_thread_params->my_lock);
 		if (mission_start_byte == -1){
 			Read__Release(p_thread_params->my_lock);	
 			printf("Queue is Empty\n");
