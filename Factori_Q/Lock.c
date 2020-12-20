@@ -6,7 +6,7 @@ Lock* New__Lock(int number_of_threads)
 {
 	Lock* my_lock = (Lock*)malloc(sizeof(Lock));
 	if (my_lock == NULL) {
-		printf("MEMORY_ALLOCATION_FAILED");
+		printf("MEMORY_ALLOCATION_FAILED\n");
 		return NULL;
 	}
 	my_lock->read_lock = CreateSemaphoreA(NULL, number_of_threads, number_of_threads, NULL);

@@ -75,7 +75,7 @@ int Get_Number(HANDLE file_handle)
 		NULL,
 		NULL))
 	{
-		printf("READ_FILE_FAIL");
+		printf("READ_FILE_FAIL\n");
 		return -1;
 	}
 	while (current_char != '\r')
@@ -89,7 +89,7 @@ int Get_Number(HANDLE file_handle)
 			NULL,
 			NULL))
 		{
-			printf("READ_FILE_FAIL");
+			printf("READ_FILE_FAIL\n");
 			return -1;
 		}
 	}
@@ -129,7 +129,7 @@ bool Write_Mission(HANDLE mission_file_handle, int mission_number)
 	if (list_format_string == NULL)
 	{
 		Free__List(current_mission_head);
-		printf("MEMORY_ALLOCATION_FAILURE");
+		printf("MEMORY_ALLOCATION_FAILURE\n");
 		return false;
 	}
 	list_format_string = Print__List(current_mission_head, mission_number, list_format_string, memory_size);
@@ -153,7 +153,7 @@ bool Write_Mission(HANDLE mission_file_handle, int mission_number)
 	{
 		free(list_format_string);
 		Free__List(current_mission_head);
-		printf("Write_FILE_FAIL");
+		printf("Write_FILE_FAIL\n");
 		return false;
 	}
 	free(list_format_string);
@@ -165,7 +165,7 @@ Queue* Create_Priority_Queue(HANDLE priority_file_handle, int number_of_missions
 	Queue* priority_Q = New__Queue();
 	if (priority_Q == NULL)
 	{
-		printf("MEMORY_ALLOCATION_FAILED");
+		printf("MEMORY_ALLOCATION_FAILED\n");
 		return NULL;
 	}
 	int priority_number = 0;
@@ -187,7 +187,7 @@ BOOL CloseHandleSimple(HANDLE h_to_close)
 {
 	if (CloseHandle(h_to_close) == FALSE)
 	{
-		printf("FAILED_TO_CLOSE_HANDLE");
+		printf("FAILED_TO_CLOSE_HANDLE\n");
 		return FALSE;
 	}
 	return TRUE;
@@ -203,7 +203,7 @@ DWORD WINAPI Read_And_Write(LPVOID lp_params)
 	if (mission_file_handle == INVALID_HANDLE_VALUE){
 		DWORD dw = GetLastError();
 		printf("error: %d/n", dw);
-		printf("FAILED_TO_OPEN");
+		printf("FAILED_TO_OPEN\n");
 		return FAILURE_CODE;
 	}		
 	/*==========================================================================================*/
@@ -215,7 +215,7 @@ DWORD WINAPI Read_And_Write(LPVOID lp_params)
 		int mission_start_byte = Pop__Queue(p_thread_params->priority_Q);
 		if (mission_start_byte == -1){
 			Read__Release(p_thread_params->my_lock);	
-			printf("Queue is Empty");
+			printf("Queue is Empty\n");
 			if (CloseHandleSimple(mission_file_handle) == FALSE)
 			{
 				return FAILURE_CODE;
@@ -278,7 +278,7 @@ int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 	/* Create Thread Params */
 	Thread_Params* p_thread_params = (Thread_Params*)malloc(sizeof(Thread_Params));
 	if (p_thread_params == NULL) {
-		printf("MEMORY_ALLOCATION_FAILURE");
+		printf("MEMORY_ALLOCATION_FAILURE\n");
 		return -1;
 	}
 	if (snprintf(p_thread_params->mission_file_name, _MAX_PATH, "%s", mission_file_name) == 0)
@@ -294,7 +294,7 @@ int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 		GENERIC_READ, 0, OPEN_EXISTING);
 	if (priority_file_handle == INVALID_HANDLE_VALUE) {
 		free(p_thread_params);
-		printf("FAILED_TO_OPEN");
+		printf("FAILED_TO_OPEN\n");
 		return -1;
 	}
 	p_thread_params->priority_Q = Create_Priority_Queue(priority_file_handle, number_of_missions);
@@ -328,11 +328,12 @@ int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 		thread_handles[i] = CreateThreadSimple(Read_And_Write, p_thread_params, &(thread_id[i]));
 		if (thread_handles == NULL) {			
 			Free__Thread_Params(p_thread_params);
-			printf("FAILED_TO_CREATE_THREAD");
-			if (CloseHandleSimple(priority_file_handle) == FALSE)
+			printf("FAILED_TO_CREATE_THREAD\n");			
+			for (int j = i; j >= 0; j--)
 			{
-				return -1;
+				CloseHandleSimple(thread_handles[j]);				
 			}
+			CloseHandleSimple(priority_file_handle);
 			return -1;
 		}
 	}
@@ -343,7 +344,11 @@ int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 	wait_code = WaitForMultipleObjects(p_thread_params->number_of_threads, thread_handles, TRUE, WAIT_TIME);
 	if (WAIT_OBJECT_0 != wait_code) {
 		Free__Thread_Params(p_thread_params);
-		printf("Error when waiting");
+		printf("Error when waiting\n");
+		for (int j = 0; j < number_of_threads; j++)
+		{
+			CloseHandleSimple(thread_handles[j]);
+		}
 		if (CloseHandleSimple(priority_file_handle) == FALSE)
 		{
 			return -1;
@@ -351,10 +356,22 @@ int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 		return -1;
 	}
 	Free__Thread_Params(p_thread_params);
+	BOOL close_handle_success = TRUE;
+	for (int j = 0; j < number_of_threads; j++)
+	{
+		if (CloseHandleSimple(thread_handles[j]) == FALSE)
+		{
+			close_handle_success = FALSE;
+		}
+	}
 	if (CloseHandleSimple(priority_file_handle) == FALSE)
 	{
-		return -1;
+		close_handle_success = FALSE;
 	}	
+	if (!close_handle_success)
+	{
+		return -1;
+	}
 	return  1;
 }
 
