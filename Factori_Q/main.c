@@ -328,11 +328,12 @@ int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 		thread_handles[i] = CreateThreadSimple(Read_And_Write, p_thread_params, &(thread_id[i]));
 		if (thread_handles == NULL) {			
 			Free__Thread_Params(p_thread_params);
-			printf("FAILED_TO_CREATE_THREAD");
-			if (CloseHandleSimple(priority_file_handle) == FALSE)
+			printf("FAILED_TO_CREATE_THREAD");			
+			for (int j = i; j >= 0; j--)
 			{
-				return -1;
+				CloseHandleSimple(thread_handles[j]);				
 			}
+			CloseHandleSimple(priority_file_handle);
 			return -1;
 		}
 	}
@@ -351,10 +352,22 @@ int Create_And_Handle_Threads(char* mission_file_name, char* priority_file_name,
 		return -1;
 	}
 	Free__Thread_Params(p_thread_params);
+	BOOL close_handle_success = TRUE;
+	for (int j = 0; j < number_of_threads; j++)
+	{
+		if (CloseHandleSimple(thread_handles[j]) == FALSE)
+		{
+			close_handle_success = FALSE;
+		}
+	}
 	if (CloseHandleSimple(priority_file_handle) == FALSE)
 	{
-		return -1;
+		close_handle_success = FALSE;
 	}	
+	if (!close_handle_success)
+	{
+		return -1;
+	}
 	return  1;
 }
 
