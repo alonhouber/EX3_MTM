@@ -17,13 +17,13 @@ HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE p_start_routine, LPVOID p_param
 	HANDLE thread_handle;
 	if (NULL == p_start_routine)
 	{
-		printf("Error when creating a thread\nReceived null pointer");
+		printf("Error when creating a thread\nReceived null pointer\n");
 		return NULL;
 	}
 
 	if (NULL == p_thread_id)
 	{
-		printf("Error when creating a thread\nReceived null pointer");
+		printf("Error when creating a thread\nReceived null pointer\n");
 		return NULL;
 	}
 
@@ -52,11 +52,11 @@ int SetFilePointerSimple(HANDLE file, long distance_to_move , DWORD move_method)
 	{
 		if (!CloseHandle(file))
 		{
-			printf("HANDLE_CLOSING_ERROR");
+			printf("HANDLE_CLOSING_ERROR\n");
 			return FAILURE_CODE;
 		}
 		printf("ERROR: %d\n", GetLastError());
-		printf("FAILED_TO_SET_FILE_POINTER");
+		printf("FAILED_TO_SET_FILE_POINTER\n");
 		return FAILURE_CODE;
 	}
 	return 0;
